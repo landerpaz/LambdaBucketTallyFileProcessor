@@ -189,6 +189,20 @@ public class Utility {
 		}
 	}
 	
+	public static String getCompanyFromFileName(String fileName, int companyIdPositionInFileName) {
+		
+		try {
+			if(null != fileName && fileName.contains("_")) {
+				return (fileName.split("_"))[companyIdPositionInFileName].trim().toUpperCase();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return null;
+	}
+
 	public static int removeDecimal(String qty) {
 		
 		System.out.println("qty : " + qty);

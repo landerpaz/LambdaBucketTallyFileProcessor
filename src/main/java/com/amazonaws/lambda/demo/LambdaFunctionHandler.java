@@ -62,7 +62,8 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
 	            TallyDayBookBC tallyDayBookBC = new TallyDayBookBC();
 	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            tallyInputDTO.setTiny(false);
-	            tallyInputDTO.setCompanyId("Spak");
+	            //tallyInputDTO.setCompanyId("Spak");
+	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 0));
 	            
 	            tallyDayBookBC.addTallyDayBookData(tallyInputDTO, response, sourceKey, sourceBucket);
 	            
@@ -82,7 +83,8 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	
             	TallySummaryBC tallySummaryBC = new TallySummaryBC();
 	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
-	            tallyInputDTO.setCompanyId("Spak");
+	            //tallyInputDTO.setCompanyId("Spak");
+	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 1));
 	            tallyInputDTO.setYear(Utility.getYearFromFileName(sourceKey));
 	            tallyInputDTO.setGroup("PROD");
 	            tallyInputDTO.setFrequency("MONTH");
@@ -95,7 +97,8 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	
             	TallySummaryBC tallySummaryBC = new TallySummaryBC();
 	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
-	            tallyInputDTO.setCompanyId("Spak");
+	            //tallyInputDTO.setCompanyId("Spak");
+	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 1));
 	            tallyInputDTO.setYear(Utility.getYearFromFileName(sourceKey));
 	            tallyInputDTO.setGroup("SALES");
 	            tallyInputDTO.setFrequency("MONTH");
