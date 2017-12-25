@@ -248,6 +248,6 @@ public class Constants {
 	
 	
 	public static final String DB_HISTORY_DATA_ADD = "insert into HISTORY_DATA(GROUP_NAME, AMOUNT, FREQUENCY, MONTH, YEAR, STATUS, LAST_UPDATED, COMPANY_ID) values (?, ?, ?, ?, ?, ?, ?, ?)";
-	public static final String DB_HISTORY_DATA_DELETE = "DELETE FROM HISTORY_DATA WHERE YEAR = ? AND GROUP_NAME = ? AND FREQUENCY = ?";
+	public static final String DB_HISTORY_DATA_DELETE = "DELETE FROM HISTORY_DATA WHERE YEAR = ? AND GROUP_NAME = ? AND FREQUENCY = ? AND COMPANY_ID = ?";
 	//public static final String DB_HISTORY_DATA_DELETE = "DELETE FROM HISTORY_DATA WHERE YEAR = ?";
 }

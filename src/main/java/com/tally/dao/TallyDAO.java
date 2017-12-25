@@ -556,6 +556,7 @@ public class TallyDAO implements BaseDAO {
 			deletePreparedStatement.setString(1, tallyInputDTO.getYear());
 			deletePreparedStatement.setString(2, tallyInputDTO.getGroup());
 			deletePreparedStatement.setString(3, tallyInputDTO.getFrequency());
+			deletePreparedStatement.setString(4, tallyInputDTO.getCompanyId());
 			deletePreparedStatement.executeUpdate();
 			
 			System.out.println("History table deleted for year " + tallyInputDTO.getYear());
@@ -622,6 +623,7 @@ public class TallyDAO implements BaseDAO {
 			deletePreparedStatement.setString(1, tallyInputDTO.getYear());
 			deletePreparedStatement.setString(2, tallyInputDTO.getGroup());
 			deletePreparedStatement.setString(3, tallyInputDTO.getFrequency());
+			deletePreparedStatement.setString(4, tallyInputDTO.getCompanyId());
 			deletePreparedStatement.executeUpdate();
 			
 			System.out.println("History table deleted for year " + tallyInputDTO.getYear());
