@@ -163,7 +163,9 @@ public class Utility {
 		
 		//System.out.println("sales_summary__2017__.xml".contains(Constants.SALES_SUMMARY));
 		
-		System.out.println(removeDecimal(null));
+		System.out.println(removeDecimal("978000.00"));
+		//int i = (int)Double.parseDouble("978000.00");
+		//System.out.println(i);
 	}
 	
 	public static String getCurrentYear() {
@@ -207,11 +209,15 @@ public class Utility {
 		
 		System.out.println("qty : " + qty);
 		
+		int output = 0;
+		
 		if(null != qty && qty.contains(".")) {
-			return Integer.parseInt((qty.split(".00"))[0].trim());
+			//return Integer.parseInt((qty.split(".00"))[0].trim());
+			qty = qty.replace("Kgs", "").trim();
+			output = (int)Double.parseDouble(qty);
 		} 
 		
-		return 0;
+		return output;
 	}
 		
 }
