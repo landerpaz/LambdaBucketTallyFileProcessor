@@ -193,16 +193,20 @@ public class Utility {
 	
 	public static String getCompanyFromFileName(String fileName, int companyIdPositionInFileName) {
 		
+		String companyName = null;
+		
 		try {
 			if(null != fileName && fileName.contains("_")) {
-				return (fileName.split("_"))[companyIdPositionInFileName].trim().toUpperCase();
+				companyName = (fileName.split("_"))[companyIdPositionInFileName].trim().toUpperCase();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 		
-		return null;
+		System.out.println("Company Name : " + companyName);
+		
+		return companyName;
 	}
 
 	public static int removeDecimal(String qty) {

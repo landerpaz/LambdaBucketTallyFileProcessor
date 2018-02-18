@@ -14,6 +14,7 @@ import com.tally.vo.DayBookMasterVO;
 import com.tally.vo.InventoryEntryVO;
 import com.tally.vo.LedgerEntryVO;
 import com.tally.vo.ProductionSummaryVO;
+import com.tally.vo.SalesOrder;
 import com.tally.vo.SalesSummaryVO;
 import com.tally.vo.StockBatchUDF;
 import com.tally.vo.StockDetail;
@@ -680,6 +681,75 @@ public class TallyDAO implements BaseDAO {
 				// TODO: handle exception
 				e.printStackTrace();
 			}
+			closeResources();
+		}
+		
+	}
+	
+	public void addSalesOrder(TallyInputDTO tallyInputDTO) {
+		
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			
+			connection = DatabaseManager.getInstance().getConnection();
+			connection.setAutoCommit(false);
+			
+			//double amount = 0.0;
+			for(SalesOrder salesOrder : tallyInputDTO.getSalesOrders()) {
+			
+				//insert data into table
+				preparedStatement = connection.prepareStatement(Constants.DB_SALES_ORDER_ADD);
+				
+				int parameterIndex = 1;
+				
+				preparedStatement.setString(parameterIndex++, salesOrder.getVoucherKey());
+				preparedStatement.setString(parameterIndex++, salesOrder.getOrderDate());
+				preparedStatement.setString(parameterIndex++, salesOrder.getCompany());
+				preparedStatement.setString(parameterIndex++, salesOrder.getSize());
+				preparedStatement.setString(parameterIndex++, salesOrder.getWeight());
+				
+				
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCompanyId());
+				
+				preparedStatement.setString(parameterIndex++, salesOrder.getOrderNumber());
+				preparedStatement.setString(parameterIndex++, salesOrder.getBf());
+				preparedStatement.setString(parameterIndex++, salesOrder.getGsm());
+				preparedStatement.setString(parameterIndex++, salesOrder.getReel());
+				
+				
+				try {
+					preparedStatement.executeUpdate();
+				}  catch (Exception e) {
+					// TODO: handle exception
+					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+						System.out.println("Record is already available in Sales Orders table");
+					} else {
+						e.printStackTrace();
+						//throw new RuntimeException(e);
+					}
+					
+					continue;
+				}
+				
+			}
+			
+			connection.commit();
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			if(null != connection) {
+				try{
+					connection.rollback();
+				} catch (Exception ex) {
+					// TODO: handle exception
+					ex.printStackTrace();
+				}
+			}
+		} finally {
+			
 			closeResources();
 		}
 		

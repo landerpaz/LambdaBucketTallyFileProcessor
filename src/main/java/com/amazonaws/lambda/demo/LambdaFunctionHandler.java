@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.tally.bc.SalesOrderBC;
 import com.tally.bc.TallyDayBookBC;
 import com.tally.bc.TallyStockBC;
 import com.tally.bc.TallySummaryBC;
@@ -104,6 +105,17 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
 	            tallyInputDTO.setFrequency("MONTH");
 		           
 	            tallySummaryBC.addSalesSummary(tallyInputDTO, response, sourceKey, sourceBucket);
+	            
+            } else if(null != sourceKey && sourceKey.contains(Constants.SALES_ORDER)) {
+            	
+            	System.out.println("Processing SALES_ORDER file.");
+            	
+            	SalesOrderBC salesOrderBC = new SalesOrderBC();
+	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
+	            //tallyInputDTO.setCompanyId("Spak");
+	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 1));
+	            
+	            salesOrderBC.addSalesOrder(tallyInputDTO, response, sourceKey, sourceBucket);
 	            
             } else {
             	System.out.println("Invalid file name!");

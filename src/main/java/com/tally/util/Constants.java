@@ -194,6 +194,7 @@ public class Constants {
 	public static final String TALLY_DAY_BOOK = "TALLY_DAY_BOOK";
 	public static final String PRODUCTION_SUMMARY = "PRODUCTION_SUMMARY";
 	public static final String SALES_SUMMARY = "SALES_SUMMARY";
+	public static final String SALES_ORDER = "SALES_ORDER";
 
 	//stock new approach
 	public static final String TALLYMESSAGE_COUNT_EXP1 = "count(//ENVELOPE/BODY/DATA/COLLECTION/VOUCHER)";
@@ -250,4 +251,7 @@ public class Constants {
 	public static final String DB_HISTORY_DATA_ADD = "insert into HISTORY_DATA(GROUP_NAME, AMOUNT, FREQUENCY, MONTH, YEAR, STATUS, LAST_UPDATED, COMPANY_ID) values (?, ?, ?, ?, ?, ?, ?, ?)";
 	public static final String DB_HISTORY_DATA_DELETE = "DELETE FROM HISTORY_DATA WHERE YEAR = ? AND GROUP_NAME = ? AND FREQUENCY = ? AND COMPANY_ID = ?";
 	//public static final String DB_HISTORY_DATA_DELETE = "DELETE FROM HISTORY_DATA WHERE YEAR = ?";
+	
+	public static final String DB_SALES_ORDER_ADD = "insert into SALES_ORDERS(VOUCHER_KEY, ORDER_DATE, COMPANY, SIZE, WEIGHT, ORDER_STATUS, ALTERED, CREATED_DATE, MODIFIED_DATE, COMPANY_ID, ORDER_NO, BF, GSM, REEL) values (?, ?, ?, ?, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?)";
+	
 }
