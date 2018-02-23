@@ -223,5 +223,82 @@ public class Utility {
 		
 		return output;
 	}
+	
+	public static String[] formatItem(String item) {
 		
+		//System.out.println(item);
+		String[] result = new String[3];
+		String parsedItem = null;
+		String bf = null;
+		String gsm = null;
+		String size = null;
+		
+		//System.out.println(item);
+		
+		if(null != item && item.contains("CM")) { //CM
+			
+			String[] values = item.replace(" CM", "CM").split(" ");
+			String quantity = values[values.length-1];
+			
+			parsedItem = item.replace(quantity, "");
+			size = quantity.replace("CM", "");
+			
+			
+			//System.out.println("result[1] : " + result[1]);
+			
+			double inchValue = Double.parseDouble(size)/2.54;
+			
+			size = Double.toString(Math.round(inchValue * 100.0) / 100.0 );
+			
+		} else if (null != item && item.contains("\"")) { //inch
+			
+			String[] values = item.replace(" \"", "\"").split(" ");
+			String quantity = values[values.length-1];
+			
+			parsedItem = item.replace(quantity, "");
+			size = quantity.replace("\"", "");
+			
+		}
+		
+		//System.out.println(parsedItem);
+		
+		parsedItem = parsedItem.replace("BF", "!!!");
+		parsedItem = parsedItem.replace("GSM", "!!!");
+		
+		String[] parsedItems = parsedItem.split("!!!");
+		
+		result[0] = parsedItems[0].trim();
+		result[1] = parsedItems[1].trim();
+		result[2] = size;
+		
+		
+		return result;
+	}
+		
+	public static double formatQtyTon(String qty) {
+		
+		if(null != qty && qty.contains("Ton")) {
+			return Double.parseDouble((qty.split("="))[1].trim().replace(" Ton", ""));
+		} 
+		
+		return 0;
+	}
+	
+	public static String getReel(String size, double weight) {
+		String reel =  null;
+		
+		if (null != size) {
+			
+			double sizeValue = Double.parseDouble(size);
+			//double weightValue = Double.parseDouble(weight);
+			
+			double temp = (weight * 1000) / (sizeValue * 10);
+			//System.out.println("temp : " + temp);
+			int valueX = (int) Math.round(temp);
+			reel = Integer.toString(valueX);
+		}
+		
+		return reel;
+		
+	}
 }

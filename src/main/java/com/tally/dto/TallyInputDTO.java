@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.tally.vo.DayBookMasterVO;
 import com.tally.vo.ProductionSummaryVO;
+import com.tally.vo.Receipt;
+import com.tally.vo.Sales;
 import com.tally.vo.SalesOrder;
 import com.tally.vo.SalesSummaryVO;
 import com.tally.vo.StockMaster;
@@ -24,7 +26,21 @@ public class TallyInputDTO {
 	private String frequency;
 	private String group;
 	private List<SalesOrder> salesOrders;
+	private List<Sales> salesList;
+	private List<Receipt> receipts;
 	
+	public List<Sales> getSalesList() {
+		return salesList;
+	}
+	public void setSalesList(List<Sales> salesList) {
+		this.salesList = salesList;
+	}
+	public List<Receipt> getReceipts() {
+		return receipts;
+	}
+	public void setReceipts(List<Receipt> receipts) {
+		this.receipts = receipts;
+	}
 	public List<SalesOrder> getSalesOrders() {
 		return salesOrders;
 	}

@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.tally.bc.SalesOrderBC;
+import com.tally.bc.TallyBC;
 import com.tally.bc.TallyDayBookBC;
 import com.tally.bc.TallyStockBC;
 import com.tally.bc.TallySummaryBC;
@@ -60,13 +61,18 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	
             	System.out.println("Processing TALLY_DAY_BOOK file.");
             	
-	            TallyDayBookBC tallyDayBookBC = new TallyDayBookBC();
 	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            tallyInputDTO.setTiny(false);
 	            //tallyInputDTO.setCompanyId("Spak");
 	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 0));
 	            
-	            tallyDayBookBC.addTallyDayBookData(tallyInputDTO, response, sourceKey, sourceBucket);
+	            //process day book only
+	            //TallyDayBookBC tallyDayBookBC = new TallyDayBookBC();
+	            //tallyDayBookBC.addTallyDayBookData(tallyInputDTO, response, sourceKey, sourceBucket);
+	            
+	            //process daybook, stock and sales
+	            TallyBC tallyBC = new TallyBC();
+	            tallyBC.processDataFromXML(tallyInputDTO, response, sourceKey, sourceBucket);
 	            
             } else if(null != sourceKey && sourceKey.contains(Constants.TALLY_STOCK)) {
             	

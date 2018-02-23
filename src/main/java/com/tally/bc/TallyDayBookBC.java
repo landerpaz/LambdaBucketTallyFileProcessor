@@ -24,6 +24,7 @@ import static com.tally.util.Constants.VOUCHER_ALLLEDGERENTRIES_LIST;
 import static com.tally.util.Constants.VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_1;
 import static com.tally.util.Constants.VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_1_TINY;
 import static com.tally.util.Constants.VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_2;
+import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIESOUT_STATUS;
 import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIES_IN_LIST;
 import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIES_IN_LIST_COUNT_2;
 import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIES_LIST;
@@ -34,6 +35,7 @@ import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST;
 import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST_COUNT_1;
 import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST_COUNT_1_TINY;
 import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST_COUNT_2;
+import static com.tally.util.Utility.getData;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -61,6 +63,7 @@ import com.tally.util.Utility;
 import com.tally.vo.DayBookMasterVO;
 import com.tally.vo.InventoryEntryVO;
 import com.tally.vo.LedgerEntryVO;
+import com.tally.vo.SalesOrder;
 import com.tally.vo.StockBatchUDF;
 import com.tally.vo.StockDetail;
 import com.tally.vo.StockMaster;
@@ -132,8 +135,7 @@ public class TallyDayBookBC {
 	    
 	}
 	
-	//public void addTallyDayBookData(TallyInputDTO tallyInputDTO, AmazonS3 s3, String key, String bucket) throws Exception {
-	//public void addTallyDayBookData(TallyInputDTO tallyInputDTO, AmazonS3 s3, String key, String bucket)  {
+
 	public void addTallyDayBookData(TallyInputDTO tallyInputDTO, S3Object s3, String key, String bucket)  {
 		
 		//long startTime = System.currentTimeMillis();
@@ -480,5 +482,5 @@ public class TallyDayBookBC {
 		
 		return dayBookMasterVOs;
 	}
-	
+
 }

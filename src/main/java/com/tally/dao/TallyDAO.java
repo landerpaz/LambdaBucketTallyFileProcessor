@@ -14,6 +14,8 @@ import com.tally.vo.DayBookMasterVO;
 import com.tally.vo.InventoryEntryVO;
 import com.tally.vo.LedgerEntryVO;
 import com.tally.vo.ProductionSummaryVO;
+import com.tally.vo.Receipt;
+import com.tally.vo.Sales;
 import com.tally.vo.SalesOrder;
 import com.tally.vo.SalesSummaryVO;
 import com.tally.vo.StockBatchUDF;
@@ -134,6 +136,7 @@ public class TallyDAO implements BaseDAO {
 		
 		PreparedStatement ledgerPreparedStatement = null;
 		PreparedStatement inventoryPreparedStatement = null;
+		String voucherKey = null;
 		
 		try {
 			
@@ -141,6 +144,9 @@ public class TallyDAO implements BaseDAO {
 			connection.setAutoCommit(false);
 			
 			for(DayBookMasterVO dayBookMasterVO : tallyInputDTO.getDayBookMasterVOs()) {
+				
+				voucherKey = dayBookMasterVO.getVoucherKey();
+				System.out.println("Day book VK : " + voucherKey);
 			
 				/*	int parameterIndex = 1;
 				
@@ -173,7 +179,23 @@ public class TallyDAO implements BaseDAO {
 				preparedStatement.setString(parameterIndex++, null);
 				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCompanyId());
 				
-				preparedStatement.executeUpdate();
+				//preparedStatement.executeUpdate();
+				
+				
+				try {
+					preparedStatement.executeUpdate();
+					
+					System.out.println("Day book VK : " + voucherKey + " Inserted");
+				} catch (Exception e) {
+					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+						System.out.println("Record is already available in Day book master table");
+					} else {
+						e.printStackTrace();
+						//throw new RuntimeException(e);
+					}
+					
+					continue;
+				}
 				
 				//LOG.info(LOG_BASE_FORMAT, tallyInputDTO.getTrackingID(), "addTallyDayBook, data inserted in DB DAYBOOK_MASTER for Party : " + dayBookMasterVO.getPartyLedgerName() + " , Ledger type : " + dayBookMasterVO.getVoucherType());
 				
@@ -235,13 +257,13 @@ public class TallyDAO implements BaseDAO {
 				}
 			}
 			
-			if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+			/*if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
 				//LOG.warn(LOG_BASE_FORMAT, tallyInputDTO.getTrackingID(), "Record is already available");
-				System.out.println("Record is already available");
+				System.out.println("Record is already available for vc : " + voucherKey);
 			} else {
 				e.printStackTrace();
 				//throw new RuntimeException(e);
-			}
+			}*/
 			
 			//response.setStatus(Constants.RESPONSE_STATUS_FAILED);
 			//response.setStatusMessage(Constants.RESPONSE_MESSAGE_PRODUCT_ADD_FAILED);
@@ -412,7 +434,7 @@ public class TallyDAO implements BaseDAO {
 						}
 						batchUDFPreparedStatement.setDouble(parameterIndex++, amount);
 						
-						amount = 0.0;
+						/*amount = 0.0;
 						if(null != stockBatchUDF.getUDF_671089655() && stockBatchUDF.getUDF_671089655().trim().length() > 0) {
 							amount = Math.abs(Double.parseDouble(stockBatchUDF.getUDF_671089655()));
 						}
@@ -452,7 +474,7 @@ public class TallyDAO implements BaseDAO {
 						if(null != stockBatchUDF.getUDF_788538155() && stockBatchUDF.getUDF_788538155().trim().length() > 0) {
 							amount = Math.abs(Double.parseDouble(stockBatchUDF.getUDF_788538155()));
 						}
-						batchUDFPreparedStatement.setDouble(parameterIndex++, amount);
+						batchUDFPreparedStatement.setDouble(parameterIndex++, amount);*/
 						
 						/*
 						amount = 0.0;
@@ -703,6 +725,13 @@ public class TallyDAO implements BaseDAO {
 				
 				int parameterIndex = 1;
 				
+				/*System.out.println("vc : " + salesOrder.getVoucherKey());
+				System.out.println("on : " + salesOrder.getOrderNumber());
+				System.out.println("bf : " + salesOrder.getBf());
+				System.out.println("gsm : " + salesOrder.getGsm());
+				System.out.println("size : " + salesOrder.getSize());
+				*/
+				
 				preparedStatement.setString(parameterIndex++, salesOrder.getVoucherKey());
 				preparedStatement.setString(parameterIndex++, salesOrder.getOrderDate());
 				preparedStatement.setString(parameterIndex++, salesOrder.getCompany());
@@ -750,6 +779,113 @@ public class TallyDAO implements BaseDAO {
 			}
 		} finally {
 			
+			closeResources();
+		}
+		
+	}
+
+	public void addSales(TallyInputDTO tallyInputDTO) {
+		
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			
+			connection = DatabaseManager.getInstance().getConnection();
+			double amount = 0.0;
+			
+			for(Sales sales : tallyInputDTO.getSalesList()) {
+			
+				preparedStatement = connection.prepareStatement(Constants.DB_ADD_SALES);
+				
+				//SALES_DETAILS(GST_NO, VOUCHER_NUMBER, PARTY_LEDGER_NAME, SALE_DATE, EFFECTIVE_DATE, VCH_TYPE, VOUCHER_KEY, LEDGER_NAME, AMOUNT, CREATED_DATE, MODIFIED_DATE, COMPANY_ID
+						
+				int parameterIndex = 1;
+				preparedStatement.setString(parameterIndex++, sales.getGstNo());
+				preparedStatement.setString(parameterIndex++, sales.getVoucherNumber());
+				preparedStatement.setString(parameterIndex++, sales.getPartyLedgerName());
+				preparedStatement.setString(parameterIndex++, sales.getDate());
+				preparedStatement.setString(parameterIndex++, sales.getEffectiveDate());
+				preparedStatement.setString(parameterIndex++, sales.getVoucherType());
+				preparedStatement.setString(parameterIndex++, sales.getVoucherKey());
+				preparedStatement.setString(parameterIndex++, sales.getLedgerName());
+				if(null != sales.getAmount() && sales.getAmount().trim().length() > 0) {
+					amount = Math.abs(Double.parseDouble(sales.getAmount()));
+				} 
+				preparedStatement.setDouble(parameterIndex++, amount);
+				amount = 0.0;
+				
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCompanyId());
+				
+				try {
+					preparedStatement.executeUpdate();
+				} catch (Exception e) {
+					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+						System.out.println("Record is already available in Sales_details table");
+					} else {
+						e.printStackTrace();
+						//throw new RuntimeException(e);
+					}
+					
+					continue;
+				}
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+		} finally {
+			closeResources();
+		}
+		
+	}
+
+	public void addReceipts(TallyInputDTO tallyInputDTO) {
+		
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			
+			connection = DatabaseManager.getInstance().getConnection();
+			
+			double amount = 0.0;
+			for(Receipt receipt : tallyInputDTO.getReceipts()) {
+			
+				preparedStatement = connection.prepareStatement(Constants.DB_ADD_RECEIPT);
+				
+				int parameterIndex = 1;
+				preparedStatement.setString(parameterIndex++, receipt.getGstNo());
+				preparedStatement.setString(parameterIndex++, receipt.getVoucherNumber());
+				preparedStatement.setString(parameterIndex++, receipt.getPartyLedgerName());
+				preparedStatement.setString(parameterIndex++, receipt.getDate());
+				preparedStatement.setString(parameterIndex++, receipt.getEffectiveDate());
+				preparedStatement.setString(parameterIndex++, receipt.getVoucherType());
+				preparedStatement.setString(parameterIndex++, receipt.getVoucherKey());
+				preparedStatement.setString(parameterIndex++, receipt.getLedgerName());
+				if(null != receipt.getAmount() && receipt.getAmount().trim().length() > 0) {
+					amount = Math.abs(Double.parseDouble(receipt.getAmount()));
+				} 
+				preparedStatement.setDouble(parameterIndex++, amount);
+				amount = 0.0;
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCompanyId());
+				
+				try {
+					preparedStatement.executeUpdate();
+				} catch (Exception e) {
+					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+						System.out.println("Record is already available in Receipt_details table");
+					} else {
+						e.printStackTrace();
+						//throw new RuntimeException(e);
+					}
+					
+					continue;
+				}
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+		} finally {
 			closeResources();
 		}
 		
