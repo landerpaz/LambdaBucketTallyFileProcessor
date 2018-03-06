@@ -28,7 +28,28 @@ public class TallyInputDTO {
 	private List<SalesOrder> salesOrders;
 	private List<Sales> salesList;
 	private List<Receipt> receipts;
+	private boolean hasError;
+	private String error;
+	private List<Result> results;
 	
+	public List<Result> getResults() {
+		return results;
+	}
+	public void setResults(List<Result> results) {
+		this.results = results;
+	}
+	public boolean isHasError() {
+		return hasError;
+	}
+	public void setHasError(boolean hasError) {
+		this.hasError = hasError;
+	}
+	public String getError() {
+		return error;
+	}
+	public void setError(String error) {
+		this.error = error;
+	}
 	public List<Sales> getSalesList() {
 		return salesList;
 	}

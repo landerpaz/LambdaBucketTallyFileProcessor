@@ -1,8 +1,14 @@
 package com.tally.util;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Date;
 import java.text.MessageFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -16,6 +22,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.w3c.dom.Document;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tally.dao.TallyDAO;
+import com.tally.dto.Result;
 import com.tally.vo.InventoryEntryVO;
 
 public class Utility {
@@ -163,15 +172,17 @@ public class Utility {
 		
 		//System.out.println("sales_summary__2017__.xml".contains(Constants.SALES_SUMMARY));
 		
-		System.out.println(removeDecimal("978000.00"));
+		//System.out.println(removeDecimal("978000.00"));
 		//int i = (int)Double.parseDouble("978000.00");
 		//System.out.println(i);
+	    //sendMail("SPAK", "testfile", "success", "ashok.arulsamy@gmail.com,selvaraj.arumuthu@gmail.com");
 	}
 	
 	public static String getCurrentYear() {
 		Calendar now = Calendar.getInstance();   // Gets the current date and time
 		return Integer.toString(now.get(Calendar.YEAR));
 	}
+	
 	
 	public static double formatQty(String qty) {
 		
@@ -300,5 +311,83 @@ public class Utility {
 		
 		return reel;
 		
+	}
+	
+	public static boolean validateCompany(String companyName) {
+		
+		TallyDAO tallyDAO = new TallyDAO();
+		List<String> companies = tallyDAO.getCompanies();
+		boolean validCompany = false;
+		
+		System.out.println(companyName);
+		
+		for(String company : companies) {
+			if(companyName.contains(company)) {
+				validCompany = true;
+				break;
+			}
+		}
+		
+		return validCompany;
+		
+	}
+	
+	public static String getData(Document doc, XPath xpath, String expression) {
+        String companyName = null;
+        try {
+        	//System.out.println(expression);
+            XPathExpression expr = xpath.compile(expression);
+            companyName = (String) expr.evaluate(doc, XPathConstants.STRING);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        }
+
+        return companyName;
+    }
+	
+	public static void sendMail(String companyId, String fileName, String status, String toMail, List<Result> results) {
+
+	  try {
+
+		StringBuilder service = new StringBuilder("http://spak-env.qupnvxxvp7.ap-south-1.elasticbeanstalk.com/services/tallyservice/tally/mail/")
+				.append(companyId).append("/").append(fileName).append("/").append(status).append("/").append(toMail);
+		  
+		 /* StringBuilder service = new StringBuilder("http://localhost:8080/restws/services/tallyservice/tally/mail/")
+					.append(companyId).append("/").append(fileName).append("/").append(status).append("/").append(toMail);
+		*/  
+		URL url = new URL(service.toString());
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestMethod("POST");
+		conn.setRequestProperty("Content-Type", "application/json");
+		conn.setRequestProperty("Authorization", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2Vycy9Uek1Vb2NNRjRwIiwiZXhwIjoxNTUxMjUyNDE4LCJuYW1lIjoiRmlyc3ROYW1lIExhc3ROYW1lIiwic2NvcGUiOiJBZG1pbiJ9.8Wl8qvKT-IYjkfRxW7GZiYUep-Qcz_BNr-px-wQYZf4");
+
+		if(null != results) {
+			ObjectMapper mapper = new ObjectMapper();
+			String jsonInString = mapper.writeValueAsString(results);
+			
+			if(null != jsonInString) {
+				OutputStream os = conn.getOutputStream();
+				os.write(jsonInString.getBytes());
+				os.flush();
+			}
+		}
+		
+		if (conn.getResponseCode() != 200) {
+			System.out.println("sendMail : Failed response");
+		} else {
+			System.out.println("Mail Sent!");
+		}	
+
+		conn.disconnect();
+
+	  } catch (MalformedURLException e) {
+		  System.out.println("Error in sending mail : " + e.getMessage());
+		  e.printStackTrace();
+	  } catch (IOException e) {
+		  System.out.println("Error in sending mail : " + e.getMessage());
+		  e.printStackTrace();
+	  }
+
 	}
 }

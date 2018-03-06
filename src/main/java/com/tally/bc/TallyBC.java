@@ -35,6 +35,53 @@ import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST;
 import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST_COUNT_1;
 import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST_COUNT_1_TINY;
 import static com.tally.util.Constants.VOUCHER_LEDGERENTRIES_LIST_COUNT_2;
+import static com.tally.util.Constants.TALLYMESSAGE_COUNT_EXP_MANUAL;
+import static com.tally.util.Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL;
+import static com.tally.util.Constants.INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT_MANUAL;
+import static com.tally.util.Constants.UDF_671089649_XPATH_MANUAL;
+import static com.tally.util.Constants.UDF_671089650_XPATH_MANUAL;
+import static com.tally.util.Constants.UDF_671089651_XPATH_MANUAL;
+import static com.tally.util.Constants.UDF_671089652_XPATH_MANUAL;
+import static com.tally.util.Constants.UDF_788538159_XPATH_MANUAL;
+import static com.tally.util.Constants.BATCH_ALLOCATION_BATCH_NAME1_MANUAL;
+import static com.tally.util.Constants.BATCH_ALLOCATION_AMOUNT1_MANUAL;
+import static com.tally.util.Constants.BATCH_ALLOCATION_BILLED_QTY1_MANUAL;
+import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIESOUT_LIST_COUNT1_MANUAL;
+import static com.tally.util.Constants.STOCKITEMNAME_XPATH_MANUAL;
+import static com.tally.util.Constants.RATE_XPATH_MANUAL;
+import static com.tally.util.Constants.AMOUNT_XPATH_MANUAL;
+import static com.tally.util.Constants.BILLEDQTY_XPATH_MANUAL;
+import static com.tally.util.Constants.BASICBUYERNAME;
+import static com.tally.util.Constants.PARTYGSTIN;
+import static com.tally.util.Constants.ORDERNO;
+import static com.tally.util.Constants.VCHTYPE_SALES_GST;
+import static com.tally.util.Constants.VCHTYPE_RECEIPTS;
+import static com.tally.util.Constants.VCHTYPE_STOCK_JOURAL_FG;
+import static com.tally.util.Constants.VCHTYPE_SALES_ORDER;
+import static com.tally.util.Constants.VCHTYPE_RECEIPTS;
+import static com.tally.util.Constants.VCHTYPE_SALES_GST;
+import static com.tally.util.Constants.VCHTYPE_SALES_ORDER;
+import static com.tally.util.Constants.ACTUALQTY;
+import static com.tally.util.Constants.BATCHALLOCATIONS_LIST;
+import static com.tally.util.Constants.VCHTYPE_STOCK_JOURAL_FG;
+import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIESIN_STATUS;
+import static com.tally.util.Constants.INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT;
+import static com.tally.util.Constants.UDF_671089649_XPATH;
+import static com.tally.util.Constants.UDF_671089650_XPATH;
+import static com.tally.util.Constants.UDF_671089651_XPATH;
+import static com.tally.util.Constants.UDF_671089652_XPATH;
+import static com.tally.util.Constants.UDF_788538159_XPATH;
+import static com.tally.util.Constants.BATCH_ALLOCATION_BATCH_NAME1;
+import static com.tally.util.Constants.BATCH_ALLOCATION_AMOUNT1;
+import static com.tally.util.Constants.BATCH_ALLOCATION_BILLED_QTY1;
+import static com.tally.util.Constants.VOUCHER_INVENTORYENTRIESOUT_LIST_COUNT1;
+import static com.tally.util.Constants.STOCKITEMNAME_XPATH;
+import static com.tally.util.Constants.RATE_XPATH;
+import static com.tally.util.Constants.AMOUNT_XPATH;
+import static com.tally.util.Constants.BILLEDQTY_XPATH;
+import static com.tally.util.Constants.COMPANY_MANUAL;
+import static com.tally.util.Constants.COMPANY_AUTOMATIC;
+
 import static com.tally.util.Utility.getData;
 
 import java.text.MessageFormat;
@@ -78,9 +125,15 @@ public class TallyBC {
 			TallyBC tallyBC = new TallyBC();
             TallyInputDTO tallyInputDTO = new TallyInputDTO();
             tallyInputDTO.setTiny(false);
-            tallyInputDTO.setCompanyId("SPAK");
+            tallyInputDTO.setCompanyId("DEMO");
             
-            //tallyBC.processDataFromXML(tallyInputDTO);
+            //tallyInputDTO = tallyBC.processDataFromXML(tallyInputDTO);
+            
+            /*if(null != tallyInputDTO && !tallyInputDTO.isHasError()) {
+        		Utility.sendMail("DEMO", "testfile", "Success", Constants.mailTo, tallyInputDTO.getResults());
+        	} else {
+        		Utility.sendMail("DEMO", "testfile", "Failed", Constants.mailTo, tallyInputDTO.getResults());
+        	}*/
             
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -89,8 +142,8 @@ public class TallyBC {
 	    
 	}
 	
-	//public void processDataFromXML(TallyInputDTO tallyInputDTO)  {
-	public void processDataFromXML(TallyInputDTO tallyInputDTO, S3Object s3, String key, String bucket)  {
+	//public TallyInputDTO processDataFromXML(TallyInputDTO tallyInputDTO)  {
+	public TallyInputDTO processDataFromXML(TallyInputDTO tallyInputDTO, S3Object s3, String key, String bucket)  {
 		
 		System.out.println("Parsing xml file..........");
 		//TallyInputDTO result = extractDataFromXML(tallyInputDTO);
@@ -103,7 +156,7 @@ public class TallyBC {
 			System.out.println("Number of DAYBOOK records : " + result.getDayBookMasterVOs().size());
 			System.out.println("Inserting DAYBOOK data in DB..........");
 			
-			tallyDAO.addTallyDayBook(result);
+			result = tallyDAO.addTallyDayBook(result);
 			
 			System.out.println("Inserting DAYBOOK data in DB completed");
 		} 
@@ -112,7 +165,7 @@ public class TallyBC {
 			System.out.println("Number of STOCK records : " + result.getStockMasters().size());
 			System.out.println("Inserting STOCK data in DB..........");
 			
-			tallyDAO.addTallyStock(result);
+			result = tallyDAO.addTallyStock(result);
 			
 			System.out.println("Inserting STOCK data in DB completed");
 		}
@@ -121,7 +174,7 @@ public class TallyBC {
 			System.out.println("Number of SALESORDER records : " + result.getSalesOrders().size());
 			System.out.println("Inserting SALESORDER data in DB..........");
 			
-			tallyDAO.addSalesOrder(result);
+			result = tallyDAO.addSalesOrder(result);
 			
 			System.out.println("Inserting SALESORDER in DB completed");
 		}
@@ -130,7 +183,7 @@ public class TallyBC {
 			System.out.println("Number of SALES records : " + result.getSalesList().size());
 			System.out.println("Inserting SALES data in DB..........");
 			
-			tallyDAO.addSales(result);
+			result = tallyDAO.addSales(result);
 			
 			System.out.println("Inserting SALES in DB completed");
 		}
@@ -139,16 +192,18 @@ public class TallyBC {
 			System.out.println("Number of RECEIPT records : " + result.getReceipts().size());
 			System.out.println("Inserting RECEIPT data in DB..........");
 			
-			tallyDAO.addReceipts(result);
+			result = tallyDAO.addReceipts(result);
 			
 			System.out.println("Inserting RECEIPT in DB completed");
 		}
+		
+		return result;
 	}
 	
 	//private TallyInputDTO extractDataFromXML(TallyInputDTO tallyInputDTO) {
 	private TallyInputDTO extractDataFromXML(TallyInputDTO tallyInputDTO, S3Object s3object, String key, String bucket) {
 		
-		System.out.println("TallDayBookBC:extractDataFromXML In");
+		System.out.println("TallyBC:extractDataFromXML In");
 		
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -205,8 +260,9 @@ public class TallyBC {
 			
 			/*Read File from local - START*/
 			/*builder = factory.newDocumentBuilder();
-            doc = builder.parse("/Users/ashokarulsamy/Downloads/SPAK_TALLY_DAY_BOOK__2018-02-18-11-47-15.xml");
-			XPathFactory xpathFactory = XPathFactory.newInstance();
+            doc = builder.parse("/Users/ashokarulsamy/Downloads/DEMO_TALLY_DAY_BOOK_20180303.XML");
+            //doc = builder.parse("/Users/ashokarulsamy/Downloads/SPAK_TALLY_DAY_BOOK_AUTO.xml");
+            XPathFactory xpathFactory = XPathFactory.newInstance();
             XPath xpath = xpathFactory.newXPath();*/
             /*Read File from local - END*/
             
@@ -217,24 +273,49 @@ public class TallyBC {
             XPath xpath = xpathFactory.newXPath();
             /*Read File from S3 - END*/
             
+            boolean manual = false;
             currentTimeForRandomNumber = Utility.getCurrentdateForRandomNumber();
-            int tallyMessageCount = Utility.getCount(doc, xpath, tallyInputDTO.isTiny() ? TALLYMESSAGE_COUNT_EXP_TINY : TALLYMESSAGE_COUNT_EXP);
+            int tallyMessageCount = Utility.getCount(doc, xpath, TALLYMESSAGE_COUNT_EXP);
+            
+            System.out.println("Automatic : tallyMessageCount : " + tallyMessageCount);
+            
+            if(tallyMessageCount < 1) {
+            	manual = true;
+            	tallyMessageCount = Utility.getCount(doc, xpath, TALLYMESSAGE_COUNT_EXP_MANUAL);
+            	System.out.println("TallyBC : Daybook Manual processing");
+            	
+            	System.out.println("Manual : tallyMessageCount : " + tallyMessageCount);
+            	
+            } else {
+            	System.out.println("TallyBC : Daybook Automatic processing");
+            }
+            
+            
+            //validate the company
+            if(!Utility.validateCompany(Utility.getData(doc, xpath, manual ? COMPANY_MANUAL : COMPANY_AUTOMATIC))) {
+            	System.out.println("TallyBC : Company Name is not valid!!!");
+            	return tallyInputDTO;
+            } else {
+            	System.out.println("TallyBC : Company Name is valid!!!");
+            }
+            
+            //if(true) return tallyInputDTO;
             
             for(int index=1; index<=tallyMessageCount; index++) {
             	
-            	vouherType = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VCHTYPE, index);
-        		voucherTypeName = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHERTYPENAME, index);
-        		voucherNumber = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHERNUMBER, index);
-        		voucherKey = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHERKEY, index);
-        		persistedView = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, PERSISTEDVIEW, index);
-        		alteredId = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, ALTERID, index);
-        		masterId = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, MASTERID, index);
-        		action = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, ACTION, index);
-        		date = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, DATE, index);
-        		effectiveDate = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, EFFECTIVEDATE, index);
-        		voucherAction = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, ACTION, index);
-        		partyLedgerName = Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, PARTYLEDGERNAME, index); 
-        		basicBuyerName = Utility.getPrimaryData(doc, xpath, Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE, Constants.BASICBUYERNAME, index);
+            	vouherType = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VCHTYPE, index);
+        		voucherTypeName = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHERTYPENAME, index);
+        		voucherNumber = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHERNUMBER, index);
+        		voucherKey = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHERKEY, index);
+        		persistedView = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, PERSISTEDVIEW, index);
+        		alteredId = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, ALTERID, index);
+        		masterId = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, MASTERID, index);
+        		action = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, ACTION, index);
+        		date = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, DATE, index);
+        		effectiveDate = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, EFFECTIVEDATE, index);
+        		voucherAction = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, ACTION, index);
+        		partyLedgerName = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, PARTYLEDGERNAME, index); 
+        		basicBuyerName = Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, BASICBUYERNAME, index);
         		
         		dayBookMasterVO = new DayBookMasterVO();
             	dayBookMasterVO.setVoucherType(vouherType);
@@ -250,7 +331,7 @@ public class TallyBC {
             	dayBookMasterVO.setMasterId(masterId);
             	
             	/*Sales - start*/
-            	if(vouherType.equals(Constants.VCHTYPE_SALES_GST)) {
+            	if(vouherType.equals(VCHTYPE_SALES_GST)) {
 	            	sales = new Sales();
 	            	sales.setVoucherType(vouherType);
 	            	sales.setVoucherNumber(voucherNumber);
@@ -258,12 +339,12 @@ public class TallyBC {
 	            	sales.setPartyLedgerName(partyLedgerName);
 	            	sales.setDate(effectiveDate);
 	            	sales.setEffectiveDate(effectiveDate);
-	            	sales.setGstNo(Utility.getPrimaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, Constants.PARTYGSTIN, index));
+	            	sales.setGstNo(Utility.getPrimaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, PARTYGSTIN, index));
             	}
             	/*Sales - end*/
             	
             	/*Receipt - start*/
-            	if(vouherType.equals(Constants.VCHTYPE_RECEIPTS)) {
+            	if(vouherType.equals(VCHTYPE_RECEIPTS)) {
 	            	receipt = new Receipt();
 	            	receipt.setVoucherType(vouherType);
 	            	receipt.setVoucherNumber(voucherNumber);
@@ -275,7 +356,7 @@ public class TallyBC {
             	/*Receipt - end*/
             	
             	/*Stock - start*/
-            	if(vouherType.equals(Constants.VCHTYPE_STOCK_JOURAL_FG)) {
+            	if(vouherType.equals(VCHTYPE_STOCK_JOURAL_FG)) {
 	            	stockMaster = new StockMaster();
 	            	stockMaster.setVoucherType(vouherType);
 	            	stockMaster.setAction(action);
@@ -290,32 +371,30 @@ public class TallyBC {
             	}
             	/*Stock - end*/
             	
-            	//VOUCHER_KEY, ORDER_DATE, COMPANY, SIZE, WEIGHT, ORDER_STATUS, ALTERED, CREATED_DATE, MODIFIED_DATE, COMPANY_ID, ORDER_NO, BF, GSM, REEL) values (?, ?, ?, ?, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIME
-            			
             	/*Sales - start*/
-            	/*if(vouherType.equals(Constants.VCHTYPE_SALES_ORDER)) {
+            	if(vouherType.equals(VCHTYPE_SALES_ORDER)) {
 	            	salesOrder = new SalesOrder();
 	            	salesOrder.setVoucherKey(voucherKey);
 	            	salesOrder.setOrderDate(date);
 	            	salesOrder.setCompany(basicBuyerName);
 	            	salesOrder.setCompanyId(tallyInputDTO.getCompanyId());
 		            
-            	}*/
+            	}
             	/*Sales - end*/
             	
             	/************************************************All Ledger Entries - START (DAYBOOK)*************************************************/
-            	int allLedgerEntriesListCount = Utility.getCount(doc, xpath, new StringBuilder(tallyInputDTO.isTiny() ? VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_1_TINY : VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_1).append(index).append(VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_2).toString());
+            	int allLedgerEntriesListCount = Utility.getCount(doc, xpath, new StringBuilder(manual ? Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_MANUAL : Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_AUTOMATIC).append(index).append(VOUCHER_ALLLEDGERENTRIES_LIST_COUNT_2).toString());
             	List<LedgerEntryVO> ledgerEntryVOs = new ArrayList<>();
             	for(int subIndex=1; subIndex<=allLedgerEntriesListCount; subIndex++) {
-            		String ledgerName = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_ALLLEDGERENTRIES_LIST, LEDGERNAME, index, subIndex);
-            		String amount = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_ALLLEDGERENTRIES_LIST, AMOUNT, index, subIndex); 
+            		String ledgerName = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_ALLLEDGERENTRIES_LIST, LEDGERNAME, index, subIndex);
+            		String amount = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_ALLLEDGERENTRIES_LIST, AMOUNT, index, subIndex); 
             		
             		ledgerEntryVO = new LedgerEntryVO();
             		ledgerEntryVO.setLedgerName(ledgerName);
             		ledgerEntryVO.setAmount(amount);
             		ledgerEntryVOs.add(ledgerEntryVO);
             		
-            		if(vouherType.equals(Constants.VCHTYPE_RECEIPTS) && (subIndex == 1)) {
+            		if(vouherType.equals(VCHTYPE_RECEIPTS) && (subIndex == 1)) {
             			receipt.setLedgerName(ledgerName);
             			receipt.setAmount(amount);
             			receipts.add(receipt);
@@ -324,11 +403,11 @@ public class TallyBC {
             	/************************************************All Ledger Entries - END*************************************************/
             	
             	/************************************************Ledger Entries - START (DAYBOOK)*************************************************/
-            	int ledgerEntriesListCount = Utility.getCount(doc, xpath, new StringBuilder(tallyInputDTO.isTiny() ? VOUCHER_LEDGERENTRIES_LIST_COUNT_1_TINY : VOUCHER_LEDGERENTRIES_LIST_COUNT_1).append(index).append(VOUCHER_LEDGERENTRIES_LIST_COUNT_2).toString());
+            	int ledgerEntriesListCount = Utility.getCount(doc, xpath, new StringBuilder(manual ? Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_MANUAL : Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_AUTOMATIC).append(index).append(VOUCHER_LEDGERENTRIES_LIST_COUNT_2).toString());
             	for(int subIndex=1; subIndex<=ledgerEntriesListCount; subIndex++) {
             		
-            		String ledgerName = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_LEDGERENTRIES_LIST, LEDGERNAME, index, subIndex);
-            		String amount = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_LEDGERENTRIES_LIST, AMOUNT, index, subIndex);
+            		String ledgerName = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_LEDGERENTRIES_LIST, LEDGERNAME, index, subIndex);
+            		String amount = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_LEDGERENTRIES_LIST, AMOUNT, index, subIndex);
             		
             		ledgerEntryVO = new LedgerEntryVO();
             		ledgerEntryVO.setLedgerName(ledgerName);
@@ -336,7 +415,7 @@ public class TallyBC {
             		
             		ledgerEntryVOs.add(ledgerEntryVO);
             		
-            		if(vouherType.equals(Constants.VCHTYPE_SALES_GST) && (subIndex == 1)) {
+            		if(vouherType.equals(VCHTYPE_SALES_GST) && (subIndex == 1)) {
             			sales.setLedgerName(ledgerName);
             			sales.setAmount(amount);
             			salesList.add(sales);
@@ -348,22 +427,22 @@ public class TallyBC {
             	dayBookMasterVO.setLedgerEntryVOs(ledgerEntryVOs);
             	
             	/************************************************Inventory Entries - START (DAYBOOK, SALES)*************************************************/
-            	int inventoryEntriesListCount = Utility.getCount(doc, xpath, new StringBuilder(tallyInputDTO.isTiny() ? VOUCHER_INVENTORYENTRIES_LIST_COUNT_1_TINY : VOUCHER_INVENTORYENTRIES_LIST_COUNT_1).append(index).append(VOUCHER_INVENTORYENTRIES_LIST_COUNT_2).toString());
+            	int inventoryEntriesListCount = Utility.getCount(doc, xpath, new StringBuilder(manual ? Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_MANUAL : Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_AUTOMATIC).append(index).append(VOUCHER_INVENTORYENTRIES_LIST_COUNT_2).toString());
             	List<InventoryEntryVO> inventoryEntryVOs = new ArrayList<>();
             	for(int subIndex=1; subIndex<=inventoryEntriesListCount; subIndex++) {
             		inventoryEntryVO = new InventoryEntryVO();
             		
-            		String stockItemName = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, STOCKITEMNAME, index, subIndex);
+            		String stockItemName = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, STOCKITEMNAME, index, subIndex);
             		inventoryEntryVO.setStockItemName(stockItemName);
-            		inventoryEntryVO.setRate(Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, RATE, index, subIndex));
-            		inventoryEntryVO.setAmount(Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, AMOUNT, index, subIndex));
-            		inventoryEntryVO.setBilledQuantity(Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, BILLEDQTY, index, subIndex));
+            		inventoryEntryVO.setRate(Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, RATE, index, subIndex));
+            		inventoryEntryVO.setAmount(Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, AMOUNT, index, subIndex));
+            		inventoryEntryVO.setBilledQuantity(Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, BILLEDQTY, index, subIndex));
             		inventoryEntryVOs.add(inventoryEntryVO);
             		
             		/*Sales - start*/
-            		if(vouherType.equals(Constants.VCHTYPE_SALES_ORDER) && null != stockItemName && !stockItemName.trim().equals("")) {
+            		if(vouherType.equals(VCHTYPE_SALES_ORDER) && null != stockItemName && !stockItemName.trim().equals("")) {
             			String[] itemDetail = Utility.formatItem(stockItemName);
-	            		double weight = Utility.formatQtyTon(Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, Constants.ACTUALQTY, index, subIndex));
+	            		double weight = Utility.formatQtyTon(Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, ACTUALQTY, index, subIndex));
 	        			
 	            		salesOrder = new SalesOrder();
 		            	salesOrder.setVoucherKey(voucherKey);
@@ -376,7 +455,7 @@ public class TallyBC {
 			            salesOrder.setSize(itemDetail[2]);
 			            salesOrder.setWeight(Double.toString(weight));
 			            salesOrder.setReel(Utility.getReel(itemDetail[2], weight));
-			            salesOrder.setOrderNumber(Utility.getThirdData(doc, xpath, ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, Constants.BATCHALLOCATIONS_LIST, "]//ORDERNO", index, subIndex, 1));
+			            salesOrder.setOrderNumber(Utility.getThirdData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_LIST, BATCHALLOCATIONS_LIST, "]//ORDERNO", index, subIndex, 1));
 	            		salesOrders.add(salesOrder);
             		}
             		/*Sales - end*/
@@ -385,13 +464,13 @@ public class TallyBC {
             	
             	/************************************************Inventory Entries In - START (DAYBOOK, STOCK)*************************************************/
             	stockDetails = new ArrayList<>();
-            	int inventoryEntriesInListCount = Utility.getCount(doc, xpath, new StringBuilder(tallyInputDTO.isTiny() ? VOUCHER_INVENTORYENTRIES_LIST_COUNT_1_TINY : VOUCHER_INVENTORYENTRIES_LIST_COUNT_1).append(index).append(VOUCHER_INVENTORYENTRIES_IN_LIST_COUNT_2).toString());
+            	int inventoryEntriesInListCount = Utility.getCount(doc, xpath, new StringBuilder(manual ? Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_MANUAL : Constants.ENVELOPE_BODY_DATA_TALLYMESSAGE_COUNT_AUTOMATIC).append(index).append(VOUCHER_INVENTORYENTRIES_IN_LIST_COUNT_2).toString());
             	for(int subIndex=1; subIndex<=inventoryEntriesInListCount; subIndex++) {
             		
-            		String stockItemName = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, STOCKITEMNAME, index, subIndex);
-            		String rate = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, RATE, index, subIndex);
-            		String amount = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, AMOUNT, index, subIndex);
-            		String billedQuantity = Utility.getSecondaryData(doc, xpath, tallyInputDTO.isTiny() ? ENVELOPE_BODY_DATA_TALLYMESSAGE_TINY : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, BILLEDQTY, index, subIndex);
+            		String stockItemName = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, STOCKITEMNAME, index, subIndex);
+            		String rate = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, RATE, index, subIndex);
+            		String amount = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, AMOUNT, index, subIndex);
+            		String billedQuantity = Utility.getSecondaryData(doc, xpath, manual ? ENVELOPE_BODY_DATA_TALLYMESSAGE_MANUAL : ENVELOPE_BODY_DATA_TALLYMESSAGE, VOUCHER_INVENTORYENTRIES_IN_LIST, BILLEDQTY, index, subIndex);
             		
             		inventoryEntryVO = new InventoryEntryVO();
             		inventoryEntryVO.setStockItemName(stockItemName);
@@ -401,28 +480,28 @@ public class TallyBC {
             		inventoryEntryVOs.add(inventoryEntryVO);
             		
             		/*Stock - start*/
-            		if(vouherType.equals(Constants.VCHTYPE_STOCK_JOURAL_FG)) {
+            		if(vouherType.equals(VCHTYPE_STOCK_JOURAL_FG)) {
 	            		stockDetail = new StockDetail();
 	            		stockDetail.setStockDetailsId(Utility.getRandomNumber(currentTimeForRandomNumber));
 	            		stockDetail.setStockItemName(stockItemName);
 	            		stockDetail.setRate(rate);
 	            		stockDetail.setAmount(amount);
 	            		stockDetail.setBilledQty(billedQuantity);
-	            		stockDetail.setStatus(Constants.VOUCHER_INVENTORYENTRIESIN_STATUS);
+	            		stockDetail.setStatus(VOUCHER_INVENTORYENTRIESIN_STATUS);
 	            		
 	            		
 	            		//get inventoryEntriesInBatchAllocationListCount
-	                	//int inventoryEntriesInBatchAllocationListCount = Utility.getCount(doc, xpath,Constants.INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT1 ,index, subIndex);
-	                	int inventoryEntriesInBatchAllocationListCount = Utility.getCount(doc, xpath,Constants.INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT ,index, subIndex);
+	                	//int inventoryEntriesInBatchAllocationListCount = Utility.getCount(doc, xpath,INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT1 ,index, subIndex);
+	                	int inventoryEntriesInBatchAllocationListCount = Utility.getCount(doc, xpath, manual ? INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT_MANUAL : INVENTORYENTRIESIN_BATCHALLOCATIONS_LIST_COUNT ,index, subIndex);
 	                	List<StockBatchUDF> stockBatchUDFs = new ArrayList<>();
 	                	for(int thirdIndex=1; thirdIndex<=inventoryEntriesInBatchAllocationListCount; thirdIndex++) {
 	                		
 	                		stockBatchUDF = new StockBatchUDF();
 	                		
-	                		stockBatchUDF.setUDF_671089649(Utility.getData(doc, xpath, Constants.UDF_671089649_XPATH ,index, subIndex, thirdIndex));
-	                		stockBatchUDF.setUDF_671089650(Utility.getData(doc, xpath, Constants.UDF_671089650_XPATH ,index, subIndex, thirdIndex));
-	                		stockBatchUDF.setUDF_671089651(Utility.getData(doc, xpath, Constants.UDF_671089651_XPATH ,index, subIndex, thirdIndex));
-	                		stockBatchUDF.setUDF_671089652(Utility.getData(doc, xpath, Constants.UDF_671089652_XPATH ,index, subIndex, thirdIndex));
+	                		stockBatchUDF.setUDF_671089649(Utility.getData(doc, xpath, manual ? UDF_671089649_XPATH_MANUAL : UDF_671089649_XPATH ,index, subIndex, thirdIndex));
+	                		stockBatchUDF.setUDF_671089650(Utility.getData(doc, xpath, manual ? UDF_671089650_XPATH_MANUAL : UDF_671089650_XPATH ,index, subIndex, thirdIndex));
+	                		stockBatchUDF.setUDF_671089651(Utility.getData(doc, xpath, manual ? UDF_671089651_XPATH_MANUAL : UDF_671089651_XPATH ,index, subIndex, thirdIndex));
+	                		stockBatchUDF.setUDF_671089652(Utility.getData(doc, xpath, manual ? UDF_671089652_XPATH_MANUAL : UDF_671089652_XPATH ,index, subIndex, thirdIndex));
 	                		
 //	                		stockBatchUDF.setUDF_671089655(Utility.getData(doc, xpath, Constants.UDF_671089655_XPATH ,index, subIndex, thirdIndex));
 //	                		stockBatchUDF.setUDF_671089656(Utility.getData(doc, xpath, Constants.UDF_671089656_XPATH ,index, subIndex, thirdIndex));
@@ -434,12 +513,11 @@ public class TallyBC {
 //	                		stockBatchUDF.setUDF_788538156(Utility.getData(doc, xpath, Constants.UDF_788538156_XPATH ,index, subIndex, thirdIndex));
 //	                		stockBatchUDF.setUDF_788538157(Utility.getData(doc, xpath, Constants.UDF_788538157_XPATH ,index, subIndex, thirdIndex));
 	                		
-	                		stockBatchUDF.setUDF_788538159(Utility.getData(doc, xpath, Constants.UDF_788538159_XPATH ,index, subIndex, thirdIndex));
-	                		
-	                		stockBatchUDF.setBatchName(Utility.getData(doc, xpath, Constants.BATCH_ALLOCATION_BATCH_NAME1 ,index, subIndex, thirdIndex));
+	                		stockBatchUDF.setUDF_788538159(Utility.getData(doc, xpath, manual ? UDF_788538159_XPATH_MANUAL : UDF_788538159_XPATH ,index, subIndex, thirdIndex));
+	                		stockBatchUDF.setBatchName(Utility.getData(doc, xpath, manual ? BATCH_ALLOCATION_BATCH_NAME1_MANUAL : BATCH_ALLOCATION_BATCH_NAME1 ,index, subIndex, thirdIndex));
 	                		stockBatchUDF.setRate("");
-	                		stockBatchUDF.setAmount(Utility.getData(doc, xpath, Constants.BATCH_ALLOCATION_AMOUNT1, index, subIndex, thirdIndex));
-	                		stockBatchUDF.setBilledQty(Utility.getData(doc, xpath, Constants.BATCH_ALLOCATION_BILLED_QTY1, index, subIndex, thirdIndex));
+	                		stockBatchUDF.setAmount(Utility.getData(doc, xpath, manual ? BATCH_ALLOCATION_AMOUNT1_MANUAL : BATCH_ALLOCATION_AMOUNT1, index, subIndex, thirdIndex));
+	                		stockBatchUDF.setBilledQty(Utility.getData(doc, xpath, manual ? BATCH_ALLOCATION_BILLED_QTY1_MANUAL : BATCH_ALLOCATION_BILLED_QTY1, index, subIndex, thirdIndex));
 	                		
 	                		stockBatchUDFs.add(stockBatchUDF);
 	                	}
@@ -453,15 +531,15 @@ public class TallyBC {
             	
             	/************************************************Inventory Entries Out - START (STOCK)*************************************************/
             	/*Stock - start*/
-            	if(vouherType.equals(Constants.VCHTYPE_STOCK_JOURAL_FG)) {
-	            	int inventoryEntriesOutListCount = Utility.getCount(doc, xpath, Constants.VOUCHER_INVENTORYENTRIESOUT_LIST_COUNT1,index);
+            	if(vouherType.equals(VCHTYPE_STOCK_JOURAL_FG)) {
+	            	int inventoryEntriesOutListCount = Utility.getCount(doc, xpath, manual ? VOUCHER_INVENTORYENTRIESOUT_LIST_COUNT1_MANUAL : VOUCHER_INVENTORYENTRIESOUT_LIST_COUNT1,index);
 	            	for(int subIndex=1; subIndex<=inventoryEntriesOutListCount; subIndex++) {
 	            		stockDetail = new StockDetail();
 	            		stockDetail.setStockDetailsId(Utility.getRandomNumber(currentTimeForRandomNumber));
-	            		stockDetail.setStockItemName(getData(doc, xpath, Constants.STOCKITEMNAME_XPATH, index, subIndex));
-	            		stockDetail.setRate(getData(doc, xpath, Constants.RATE_XPATH, index, subIndex));
-	            		stockDetail.setAmount(getData(doc, xpath, Constants.AMOUNT_XPATH, index, subIndex));
-	            		stockDetail.setBilledQty(getData(doc, xpath, Constants.BILLEDQTY_XPATH, index, subIndex));
+	            		stockDetail.setStockItemName(getData(doc, xpath, manual ? STOCKITEMNAME_XPATH_MANUAL : STOCKITEMNAME_XPATH, index, subIndex));
+	            		stockDetail.setRate(getData(doc, xpath, manual ? RATE_XPATH_MANUAL : RATE_XPATH, index, subIndex));
+	            		stockDetail.setAmount(getData(doc, xpath, manual ? AMOUNT_XPATH_MANUAL : AMOUNT_XPATH, index, subIndex));
+	            		stockDetail.setBilledQty(getData(doc, xpath, manual ? BILLEDQTY_XPATH_MANUAL : BILLEDQTY_XPATH, index, subIndex));
 	            		stockDetail.setStatus(VOUCHER_INVENTORYENTRIESOUT_STATUS);
 	                	stockDetails.add(stockDetail);
 	            	}
@@ -484,12 +562,14 @@ public class TallyBC {
         	tallyInputDTO.setSalesList(salesList);
         	tallyInputDTO.setReceipts(receipts);
         	
-        	System.out.println("TallDayBookBC:extractDataFromXML Out");
+        	System.out.println("TallyBC:extractDataFromXML Out");
         	
 		} catch (Exception e) {
 			// TODO: handle exception
-			System.out.println("TallDayBookBC:extractDataFromXML:error: " + e.getMessage());
+			System.out.println("TallyBC:extractDataFromXML:error: " + e.getMessage());
 			e.printStackTrace();
+			tallyInputDTO.setHasError(true);
+			tallyInputDTO.setError(e.getMessage());
 		}
 		
 		return tallyInputDTO;

@@ -1,5 +1,8 @@
 package com.amazonaws.lambda.demo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -15,6 +18,7 @@ import com.tally.bc.TallyBC;
 import com.tally.bc.TallyDayBookBC;
 import com.tally.bc.TallyStockBC;
 import com.tally.bc.TallySummaryBC;
+import com.tally.dto.Result;
 import com.tally.dto.TallyInputDTO;
 import com.tally.util.Constants;
 import com.tally.util.Utility;
@@ -23,7 +27,7 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
 
     //private AmazonS3 s3 = AmazonS3ClientBuilder.standard().build();
     
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAJVV726YW43DBG4TA", "LyMMDpZ1wgcIZ7InITAl/DQOpdVtXQrFOW7HKvFR");
+    BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAJ236YYHVV3UTSRCA", "3NF/bbIZeiNFv5O7ZXn4eUkRXSfOjxDVzPDZijmV");
     private AmazonS3 s3 = AmazonS3ClientBuilder.standard()
     						.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                             .build();
@@ -49,6 +53,10 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
         System.out.println("sourceBucket : " + sourceBucket);
         System.out.println("sourceKey : " + sourceKey);
         
+        TallyInputDTO tallyInputDTO = new TallyInputDTO();
+        List<Result> results = new ArrayList<>();
+        tallyInputDTO.setResults(results); //added here to send non blank mail body, even if no data is available when processing the data, to avoid error in mail service
+        
         try {
             
         	S3Object response = s3.getObject(new GetObjectRequest(sourceBucket, sourceKey));
@@ -61,7 +69,7 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	
             	System.out.println("Processing TALLY_DAY_BOOK file.");
             	
-	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
+	            //TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            tallyInputDTO.setTiny(false);
 	            //tallyInputDTO.setCompanyId("Spak");
 	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 0));
@@ -72,14 +80,14 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
 	            
 	            //process daybook, stock and sales
 	            TallyBC tallyBC = new TallyBC();
-	            tallyBC.processDataFromXML(tallyInputDTO, response, sourceKey, sourceBucket);
+	            tallyInputDTO = tallyBC.processDataFromXML(tallyInputDTO, response, sourceKey, sourceBucket);
 	            
             } else if(null != sourceKey && sourceKey.contains(Constants.TALLY_STOCK)) {
             	
             	System.out.println("Processing TALLY_STOCK file.");
             	
             	TallyStockBC tallyStockBC = new TallyStockBC();
-	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
+	            //TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            tallyInputDTO.setCompanyId("Spak");
 	            
 	            tallyStockBC.addStockData(tallyInputDTO, response, sourceKey, sourceBucket);
@@ -89,7 +97,7 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	System.out.println("Processing PRODUCTION_SUMMARY file.");
             	
             	TallySummaryBC tallySummaryBC = new TallySummaryBC();
-	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
+	            //TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            //tallyInputDTO.setCompanyId("Spak");
 	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 1));
 	            tallyInputDTO.setYear(Utility.getYearFromFileName(sourceKey));
@@ -103,7 +111,7 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	System.out.println("Processing SALES_SUMMARY file.");
             	
             	TallySummaryBC tallySummaryBC = new TallySummaryBC();
-	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
+	            //TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            //tallyInputDTO.setCompanyId("Spak");
 	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 1));
 	            tallyInputDTO.setYear(Utility.getYearFromFileName(sourceKey));
@@ -117,7 +125,7 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             	System.out.println("Processing SALES_ORDER file.");
             	
             	SalesOrderBC salesOrderBC = new SalesOrderBC();
-	            TallyInputDTO tallyInputDTO = new TallyInputDTO();
+	            //TallyInputDTO tallyInputDTO = new TallyInputDTO();
 	            //tallyInputDTO.setCompanyId("Spak");
 	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 1));
 	            
@@ -139,7 +147,11 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             //move file from source to backup bucket
             deleteFileFromSourceBucket(sourceBucket, sourceKey);
             
-            System.out.println("End..........");
+            /*System.out.println("Sending mail..........");
+            
+            Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 1), sourceKey, "Success", Constants.mailTo);
+            
+            System.out.println("End..........");*/
             
             return contentType;
             
@@ -150,6 +162,17 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
                 "Error getting object %s from bucket %s. Make sure they exist and"
                 + " your bucket is in the same region as this function.", sourceKey, sourceBucket));
             throw e;
+        } finally {
+        	
+        	System.out.println("Sending mail..........");
+            
+        	if(null != tallyInputDTO && !tallyInputDTO.isHasError()) {
+        		Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 0), sourceKey, "Success", Constants.mailTo, tallyInputDTO.getResults());
+        	} else {
+        		Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 0), sourceKey, "Failed", Constants.mailTo, tallyInputDTO.getResults());
+        	}
+            
+            System.out.println("End..........");
         }
         
     }

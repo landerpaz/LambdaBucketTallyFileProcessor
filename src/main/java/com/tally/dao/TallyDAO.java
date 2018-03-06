@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.tally.dto.Result;
 
 /*import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;*/
@@ -24,6 +27,10 @@ import com.tally.vo.StockMaster;
 import com.tally.util.Constants;
 import com.tally.util.TallyRequestContext;
 import com.tally.util.Utility;
+
+import static com.tally.util.Constants.DUPLICATE;
+import static com.tally.util.Constants.SUCCESS;
+import static com.tally.util.Constants.DAYBOOK;;
 
 public class TallyDAO implements BaseDAO {
 	
@@ -59,6 +66,32 @@ public class TallyDAO implements BaseDAO {
 		return nextVal + 1;
 	}
 	
+	public List<String> getCompanies() {
+		
+		List<String> companies = new ArrayList<>();
+		
+		try {
+			
+			connection = DatabaseManager.getInstance().getConnection();
+			preparedStatement = connection.prepareStatement(Constants.DB_GET_COMPANIES);
+			resultSet = preparedStatement.executeQuery();
+		
+			while(resultSet.next()) {
+				
+				companies.add(resultSet.getString(1));
+			}
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println("Error in getting companies from DB...");
+			e.printStackTrace();
+		} finally {
+			closeResources();
+		}
+		
+		return companies;
+	}
+
 	//public Response addTallySummary(TallyRequestContext context) {
 	public void addTallySummary(TallyRequestContext context) {
 		
@@ -128,11 +161,20 @@ public class TallyDAO implements BaseDAO {
 	}
 		
 	//public void addTallyDayBook(TallyInputDTO tallyInputDTO) throws Exception {
-	public void addTallyDayBook(TallyInputDTO tallyInputDTO) {
+	public TallyInputDTO addTallyDayBook(TallyInputDTO tallyInputDTO) {
 		
 		/*Response response = new Response();
 		response.setStatus(Constants.RESPONSE_STATUS_SUCCESS);
 		response.setStatusMessage(Constants.RESPONSE_MESSAGE_PRODUCT_ADD_SUCCESS);*/
+		
+		List<Result> results = null;
+		
+		if(null == tallyInputDTO.getResults()) {
+			results = new ArrayList<>();
+		} else {
+			results = tallyInputDTO.getResults();
+		}
+		Result result = null;
 		
 		PreparedStatement ledgerPreparedStatement = null;
 		PreparedStatement inventoryPreparedStatement = null;
@@ -145,8 +187,11 @@ public class TallyDAO implements BaseDAO {
 			
 			for(DayBookMasterVO dayBookMasterVO : tallyInputDTO.getDayBookMasterVOs()) {
 				
+				result = new Result();
 				voucherKey = dayBookMasterVO.getVoucherKey();
-				System.out.println("Day book VK : " + voucherKey);
+				result.setVoucherKey(voucherKey);
+				result.setVoucherType(DAYBOOK);
+				//System.out.println("Day book VK : " + voucherKey);
 			
 				/*	int parameterIndex = 1;
 				
@@ -185,12 +230,16 @@ public class TallyDAO implements BaseDAO {
 				try {
 					preparedStatement.executeUpdate();
 					
-					System.out.println("Day book VK : " + voucherKey + " Inserted");
+					//System.out.println("Day book VK : " + voucherKey + " Inserted");
 				} catch (Exception e) {
 					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
-						System.out.println("Record is already available in Day book master table");
+						System.out.println("Record is already available in Day book master table for " + voucherKey);
+						result.setStatus(DUPLICATE);
+						results.add(result);
 					} else {
 						e.printStackTrace();
+						result.setStatus(e.getMessage());
+						results.add(result);
 						//throw new RuntimeException(e);
 					}
 					
@@ -241,7 +290,11 @@ public class TallyDAO implements BaseDAO {
 					inventoryPreparedStatement.executeUpdate();
 				}
 			
+				result.setStatus(SUCCESS);
+				results.add(result);
+
 				//LOG.info(LOG_BASE_FORMAT, tallyInputDTO.getTrackingID(), "addTallyDayBook, data inserted in DB DAYBOOK_INVENTORY for Party : " + dayBookMasterVO.getPartyLedgerName() + " , Ledger type : " + dayBookMasterVO.getVoucherType());
+			
 			}
 			
 			connection.commit();
@@ -257,40 +310,35 @@ public class TallyDAO implements BaseDAO {
 				}
 			}
 			
-			/*if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
-				//LOG.warn(LOG_BASE_FORMAT, tallyInputDTO.getTrackingID(), "Record is already available");
-				System.out.println("Record is already available for vc : " + voucherKey);
-			} else {
-				e.printStackTrace();
-				//throw new RuntimeException(e);
-			}*/
+			tallyInputDTO.setHasError(true);
 			
-			//response.setStatus(Constants.RESPONSE_STATUS_FAILED);
-			//response.setStatusMessage(Constants.RESPONSE_MESSAGE_PRODUCT_ADD_FAILED);
 		} finally {
 			
 			try {
 			if(null != ledgerPreparedStatement) { ledgerPreparedStatement.close(); }
 			if(null != inventoryPreparedStatement) { inventoryPreparedStatement.close(); }
-			} catch (Exception e) {
-				// TODO: handle exception
-				e.printStackTrace();
-			}
+			} catch (Exception e) {e.printStackTrace();}
 			
 			closeResources();
 		}
 		
-		//return response;
+		tallyInputDTO.setResults(results);
+		return tallyInputDTO;
 	}
 	
-	public void addTallyStock(TallyInputDTO tallyInputDTO) {
+	public TallyInputDTO addTallyStock(TallyInputDTO tallyInputDTO) {
 		
-		/*Response response = new Response();
-		response.setStatus(Constants.RESPONSE_STATUS_SUCCESS);
-		response.setStatusMessage(Constants.RESPONSE_MESSAGE_PRODUCT_ADD_SUCCESS);*/
-		
+		String voucherKey = null;
 		PreparedStatement stockDetailPreparedStatement = null;
 		PreparedStatement batchUDFPreparedStatement = null;
+		List<Result> results = null;
+				
+		if(null == tallyInputDTO.getResults()) {
+			results = new ArrayList<>();
+		} else {
+			results = tallyInputDTO.getResults();
+		}
+		Result result = null;
 		
 		try {
 			
@@ -312,6 +360,11 @@ public class TallyDAO implements BaseDAO {
 				preparedStatement.setString(parameterIndex, dayBookMasterVO.getVoucherKey());
 				preparedStatement.execute();
 				 */
+				
+				voucherKey = stockMaster.getVoucherKey();
+				result = new Result();
+				result.setVoucherKey(voucherKey);
+				result.setVoucherType(stockMaster.getVoucherType());
 				
 				//insert data into table
 				preparedStatement = connection.prepareStatement(Constants.DB_ADD_STOCK);
@@ -347,9 +400,13 @@ public class TallyDAO implements BaseDAO {
 				}  catch (Exception e) {
 					// TODO: handle exception
 					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
-						System.out.println("Record is already available in Stock master");
+						System.out.println("Record is already available in Stock master for " + voucherKey);
+						result.setStatus(DUPLICATE);
+						results.add(result);
 					} else {
 						e.printStackTrace();
+						result.setStatus(e.getMessage());
+						results.add(result);
 						//throw new RuntimeException(e);
 					}
 					
@@ -524,6 +581,9 @@ public class TallyDAO implements BaseDAO {
 				
 				//LOG.info(LOG_BASE_FORMAT, tallyInputDTO.getTrackingID(), "addTallyDayBook, data inserted in DB DAYBOOK_LEDGER for Party : " + dayBookMasterVO.getPartyLedgerName() + " , Ledger type : " + dayBookMasterVO.getVoucherType());
 				
+				result.setStatus(SUCCESS);
+				results.add(result);
+				
 			}
 			
 			connection.commit();
@@ -540,6 +600,8 @@ public class TallyDAO implements BaseDAO {
 					ex.printStackTrace();
 				}
 			}
+			
+			tallyInputDTO.setHasError(true);
 			
 			if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
 				//LOG.warn(LOG_BASE_FORMAT, tallyInputDTO.getTrackingID(), "Record is already available");
@@ -563,7 +625,8 @@ public class TallyDAO implements BaseDAO {
 			closeResources();
 		}
 		
-		//return response;
+		tallyInputDTO.setResults(results);
+		return tallyInputDTO;
 	}
 
 	public void addProductionSummary(TallyInputDTO tallyInputDTO) {
@@ -708,9 +771,19 @@ public class TallyDAO implements BaseDAO {
 		
 	}
 	
-	public void addSalesOrder(TallyInputDTO tallyInputDTO) {
+	public TallyInputDTO addSalesOrder(TallyInputDTO tallyInputDTO) {
 		
+		String voucherKey = null;
 		PreparedStatement preparedStatement = null;
+		
+		List<Result> results = null;
+		
+		if(null == tallyInputDTO.getResults()) {
+			results = new ArrayList<>();
+		} else {
+			results = tallyInputDTO.getResults();
+		}
+		Result result = null;
 		
 		try {
 			
@@ -720,6 +793,11 @@ public class TallyDAO implements BaseDAO {
 			//double amount = 0.0;
 			for(SalesOrder salesOrder : tallyInputDTO.getSalesOrders()) {
 			
+				voucherKey = salesOrder.getVoucherKey();
+				result = new Result();
+				result.setVoucherKey(voucherKey);
+				result.setVoucherType(Constants.VCHTYPE_SALES_ORDER);
+				
 				//insert data into table
 				preparedStatement = connection.prepareStatement(Constants.DB_SALES_ORDER_ADD);
 				
@@ -752,14 +830,21 @@ public class TallyDAO implements BaseDAO {
 				}  catch (Exception e) {
 					// TODO: handle exception
 					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
-						System.out.println("Record is already available in Sales Orders table");
+						System.out.println("Record is already available in Sales Orders table for " + voucherKey);
+						result.setStatus(DUPLICATE);
+						results.add(result);
 					} else {
 						e.printStackTrace();
+						result.setStatus(e.getMessage());
+						results.add(result);
 						//throw new RuntimeException(e);
 					}
 					
 					continue;
 				}
+				
+				result.setStatus(SUCCESS);
+				results.add(result);
 				
 			}
 			
@@ -777,24 +862,43 @@ public class TallyDAO implements BaseDAO {
 					ex.printStackTrace();
 				}
 			}
+			
+			tallyInputDTO.setHasError(true);
 		} finally {
 			
 			closeResources();
 		}
 		
+		tallyInputDTO.setResults(results);
+		return tallyInputDTO;
+		
 	}
 
-	public void addSales(TallyInputDTO tallyInputDTO) {
+	public TallyInputDTO addSales(TallyInputDTO tallyInputDTO) {
 		
 		PreparedStatement preparedStatement = null;
+		List<Result> results = null;
 		
+		if(null == tallyInputDTO.getResults()) {
+			results = new ArrayList<>();
+		} else {
+			results = tallyInputDTO.getResults();
+		}
+		Result result = null;
+
 		try {
 			
 			connection = DatabaseManager.getInstance().getConnection();
 			double amount = 0.0;
 			
+			String voucherKey = null;
 			for(Sales sales : tallyInputDTO.getSalesList()) {
 			
+				voucherKey = sales.getVoucherKey();
+				result = new Result();
+				result.setVoucherKey(voucherKey);
+				result.setVoucherType(Constants.VCHTYPE_SALES_GST);
+				
 				preparedStatement = connection.prepareStatement(Constants.DB_ADD_SALES);
 				
 				//SALES_DETAILS(GST_NO, VOUCHER_NUMBER, PARTY_LEDGER_NAME, SALE_DATE, EFFECTIVE_DATE, VCH_TYPE, VOUCHER_KEY, LEDGER_NAME, AMOUNT, CREATED_DATE, MODIFIED_DATE, COMPANY_ID
@@ -820,35 +924,59 @@ public class TallyDAO implements BaseDAO {
 					preparedStatement.executeUpdate();
 				} catch (Exception e) {
 					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
-						System.out.println("Record is already available in Sales_details table");
+						System.out.println("Record is already available in Sales_details table for " + voucherKey);
+						result.setStatus(DUPLICATE);
+						results.add(result);
 					} else {
 						e.printStackTrace();
+						result.setStatus(e.getMessage());
+						results.add(result);
 						//throw new RuntimeException(e);
 					}
 					
 					continue;
 				}
 				
+				result.setStatus(SUCCESS);
+				results.add(result);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			tallyInputDTO.setHasError(true);
 			
 		} finally {
 			closeResources();
 		}
 		
+		tallyInputDTO.setResults(results);
+		return tallyInputDTO;
 	}
 
-	public void addReceipts(TallyInputDTO tallyInputDTO) {
+	public TallyInputDTO addReceipts(TallyInputDTO tallyInputDTO) {
 		
 		PreparedStatement preparedStatement = null;
+		List<Result> results = null;
+		
+		if(null == tallyInputDTO.getResults()) {
+			results = new ArrayList<>();
+		} else {
+			results = tallyInputDTO.getResults();
+		}
+		Result result = null;
 		
 		try {
 			
+			String voucherKey = null;
+				
 			connection = DatabaseManager.getInstance().getConnection();
 			
 			double amount = 0.0;
 			for(Receipt receipt : tallyInputDTO.getReceipts()) {
+			
+				voucherKey = receipt.getVoucherKey();
+				result = new Result();
+				result.setVoucherKey(voucherKey);
+				result.setVoucherType(Constants.VCHTYPE_RECEIPTS);
 			
 				preparedStatement = connection.prepareStatement(Constants.DB_ADD_RECEIPT);
 				
@@ -872,23 +1000,32 @@ public class TallyDAO implements BaseDAO {
 					preparedStatement.executeUpdate();
 				} catch (Exception e) {
 					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
-						System.out.println("Record is already available in Receipt_details table");
+						System.out.println("Record is already available in Receipt_details table for " + voucherKey);
+						result.setStatus(DUPLICATE);
+						results.add(result);
 					} else {
 						e.printStackTrace();
+						result.setStatus(e.getMessage());
+						results.add(result);
 						//throw new RuntimeException(e);
 					}
 					
 					continue;
 				}
 				
+				result.setStatus(SUCCESS);
+				results.add(result);
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+			tallyInputDTO.setHasError(true);
 		} finally {
 			closeResources();
 		}
 		
+		tallyInputDTO.setResults(results);
+		return tallyInputDTO;
 	}
 
 	private void closeResources() {
