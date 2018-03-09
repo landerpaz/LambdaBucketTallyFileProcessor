@@ -1028,6 +1028,58 @@ public class TallyDAO implements BaseDAO {
 		return tallyInputDTO;
 	}
 
+	public void updateCustomers(TallyInputDTO tallyInputDTO) {
+		
+		PreparedStatement preparedStatementAdd = null;
+ 		String gstNumber = null;
+		
+		try {
+			
+			connection = DatabaseManager.getInstance().getConnection();
+			preparedStatement = connection.prepareStatement(Constants.DB_GET_CUSTOMERS);
+			preparedStatement.setString(1, tallyInputDTO.getCustomerName());
+			preparedStatement.setString(2, tallyInputDTO.getCompanyId());
+			
+			preparedStatement.executeQuery();
+			
+			
+			if(null != resultSet && resultSet.next()) {
+				
+				gstNumber = resultSet.getString(1);
+			}
+
+			if(null == gstNumber) {
+				preparedStatementAdd = connection.prepareStatement(Constants.DB_ADD_CUSTOMERS);
+				preparedStatementAdd.setString(1, Utility.getRandomNumber());
+				preparedStatementAdd.setString(2, tallyInputDTO.getGstNumber());
+				preparedStatementAdd.setString(3, tallyInputDTO.getCustomerName());
+				preparedStatementAdd.setString(4, tallyInputDTO.getCompanyId());
+				preparedStatementAdd.setDate(5, Utility.getCurrentdate());
+				preparedStatementAdd.setDate(6, Utility.getCurrentdate());
+				
+				preparedStatementAdd.executeUpdate();
+			}
+			
+			
+		} catch (Exception e) {
+			
+			// TODO: handle exception
+			System.out.println("Error in adding customer in DB...");
+			e.printStackTrace();
+			
+		} finally {
+			try {
+				if(null != preparedStatementAdd) { preparedStatementAdd.close();}
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			
+			closeResources();
+		}
+		
+		//return response;
+	}
+
 	private void closeResources() {
 		
 		try {

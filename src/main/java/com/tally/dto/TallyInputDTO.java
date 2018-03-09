@@ -31,7 +31,21 @@ public class TallyInputDTO {
 	private boolean hasError;
 	private String error;
 	private List<Result> results;
+	private String customerName;
+	private String gstNumber;
 	
+	public String getGstNumber() {
+		return gstNumber;
+	}
+	public void setGstNumber(String gstNumber) {
+		this.gstNumber = gstNumber;
+	}
+	public String getCustomerName() {
+		return customerName;
+	}
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
 	public List<Result> getResults() {
 		return results;
 	}

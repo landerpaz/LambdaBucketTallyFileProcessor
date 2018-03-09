@@ -17,6 +17,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -246,13 +247,16 @@ public class Utility {
 		
 		//System.out.println(item);
 		
-		if(null != item && item.contains("CM")) { //CM
+		//if(null != item && item.contains("CM")) { //CM
+		if(null != item && StringUtils.containsIgnoreCase(item, "CM")) { //CM
 			
-			String[] values = item.replace(" CM", "CM").split(" ");
+			//String[] values = item.replace(" CM", "CM").split(" ");
+			String[] values = StringUtils.replaceIgnoreCase(item, " CM", "CM").split(" ");
 			String quantity = values[values.length-1];
 			
 			parsedItem = item.replace(quantity, "");
-			size = quantity.replace("CM", "");
+			//size = quantity.replace("CM", "");
+			size = StringUtils.replaceIgnoreCase(quantity,"CM", "");
 			
 			
 			//System.out.println("result[1] : " + result[1]);

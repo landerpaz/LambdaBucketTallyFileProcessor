@@ -32,6 +32,11 @@ public class Constants {
 	public static final String DB_GET_DAYBOOK_INVENTORY = "select ID, STOCK_ITEM_NAME, AMOUNT, RATE, BILLED_QTY, VOUCHER_KEY, CREATED_DATE, MODIFIED_DATE from DAYBOOK_INVENTORY";
 	public static final String DB_UPDATE_DAYBOOK_INVENTORY_FLAG = "update DAYBOOK_MASTER set FLAG = 1 where VOUCHER_KEY = ?";
 			
+	
+	//consumer
+	public static final String DB_GET_CUSTOMERS = "SELECT GST_NO FROM CUSTOMERS WHERE NAME = ? AND COMAPNY_ID = ?"; 
+	public static final String DB_ADD_CUSTOMERS = "INSERT INTO CUSTOMERS(CUSTOMER_ID, GST_NO, NAME, COMPANY_ID, CREATED_DATE, MODIFIED_DATE) VALUES (?, ?, ?, ?, ?, ?)"; 
+	
 	public static final String RESPONSE_STATUS_SUCCESS = "Success";
 	public static final String RESPONSE_STATUS_FAILED = "Fauliure";
 	public static final String RESPONSE_MESSAGE_PRODUCT_ADD_SUCCESS = "Products added successfully";
