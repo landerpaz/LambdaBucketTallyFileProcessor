@@ -33,7 +33,14 @@ public class TallyInputDTO {
 	private List<Result> results;
 	private String customerName;
 	private String gstNumber;
+	private String custID;
 	
+	public String getCustID() {
+		return custID;
+	}
+	public void setCustID(String custID) {
+		this.custID = custID;
+	}
 	public String getGstNumber() {
 		return gstNumber;
 	}

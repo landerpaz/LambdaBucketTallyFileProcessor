@@ -34,7 +34,10 @@ public class Constants {
 			
 	
 	//consumer
-	public static final String DB_GET_CUSTOMERS = "SELECT GST_NO FROM CUSTOMERS WHERE NAME = ? AND COMAPNY_ID = ?"; 
+	//public static final String DB_GET_CUSTOMERS = "SELECT CUST_ID FROM CUSTOMERS WHERE COMPANY_ID = ? AND GST_NO = ?"; 
+	public static final String DB_GET_CUSTOMERS = "SELECT CUSTOMER_ID FROM CUSTOMERS WHERE COMPANY_ID = ? AND NAME = ?";
+	public static final String DB_GET_CUSTOMERS_FOR_RECEIPT = "SELECT CUSTOMER_ID FROM CUSTOMERS WHERE COMPANY_ID = ? AND NAME = ?"; 
+	
 	public static final String DB_ADD_CUSTOMERS = "INSERT INTO CUSTOMERS(CUSTOMER_ID, GST_NO, NAME, COMPANY_ID, CREATED_DATE, MODIFIED_DATE) VALUES (?, ?, ?, ?, ?, ?)"; 
 	
 	public static final String RESPONSE_STATUS_SUCCESS = "Success";

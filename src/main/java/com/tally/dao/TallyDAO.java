@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.tally.dto.Result;
 
 /*import org.slf4j.Logger;
@@ -895,16 +897,24 @@ public class TallyDAO implements BaseDAO {
 			for(Sales sales : tallyInputDTO.getSalesList()) {
 			
 				voucherKey = sales.getVoucherKey();
+				
+				//to send the detail in mail
 				result = new Result();
 				result.setVoucherKey(voucherKey);
 				result.setVoucherType(Constants.VCHTYPE_SALES_GST);
+				
+				//add GST number and customer name in customers table
+				tallyInputDTO.setCustID(Utility.getRandomNumberBasedOnTime());
+				tallyInputDTO.setGstNumber(sales.getGstNo());
+				tallyInputDTO.setCustomerName(sales.getPartyLedgerName());
+				tallyInputDTO = updateCustomers(tallyInputDTO, connection);
 				
 				preparedStatement = connection.prepareStatement(Constants.DB_ADD_SALES);
 				
 				//SALES_DETAILS(GST_NO, VOUCHER_NUMBER, PARTY_LEDGER_NAME, SALE_DATE, EFFECTIVE_DATE, VCH_TYPE, VOUCHER_KEY, LEDGER_NAME, AMOUNT, CREATED_DATE, MODIFIED_DATE, COMPANY_ID
 						
 				int parameterIndex = 1;
-				preparedStatement.setString(parameterIndex++, sales.getGstNo());
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCustID());
 				preparedStatement.setString(parameterIndex++, sales.getVoucherNumber());
 				preparedStatement.setString(parameterIndex++, sales.getPartyLedgerName());
 				preparedStatement.setString(parameterIndex++, sales.getDate());
@@ -974,14 +984,23 @@ public class TallyDAO implements BaseDAO {
 			for(Receipt receipt : tallyInputDTO.getReceipts()) {
 			
 				voucherKey = receipt.getVoucherKey();
+				
+				//to send the detail in mail
 				result = new Result();
 				result.setVoucherKey(voucherKey);
 				result.setVoucherType(Constants.VCHTYPE_RECEIPTS);
 			
+				//get the GST number from customers table
+				tallyInputDTO.setCustID(Utility.getRandomNumberBasedOnTime());
+				tallyInputDTO.setCustomerName(receipt.getPartyLedgerName());
+				tallyInputDTO = updateCustomers(tallyInputDTO, connection);
+				System.out.println("TallyDAO : addReceipts : voucher key : " + receipt.getVoucherType() + " : Cust ID : " + tallyInputDTO.getCustID());
+				
 				preparedStatement = connection.prepareStatement(Constants.DB_ADD_RECEIPT);
 				
 				int parameterIndex = 1;
-				preparedStatement.setString(parameterIndex++, receipt.getGstNo());
+			
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCustID());
 				preparedStatement.setString(parameterIndex++, receipt.getVoucherNumber());
 				preparedStatement.setString(parameterIndex++, receipt.getPartyLedgerName());
 				preparedStatement.setString(parameterIndex++, receipt.getDate());
@@ -1028,29 +1047,27 @@ public class TallyDAO implements BaseDAO {
 		return tallyInputDTO;
 	}
 
-	public void updateCustomers(TallyInputDTO tallyInputDTO) {
+	public TallyInputDTO updateCustomers(TallyInputDTO tallyInputDTO, Connection connection) {
 		
 		PreparedStatement preparedStatementAdd = null;
- 		String gstNumber = null;
+ 		String custID = null;
 		
 		try {
 			
-			connection = DatabaseManager.getInstance().getConnection();
 			preparedStatement = connection.prepareStatement(Constants.DB_GET_CUSTOMERS);
-			preparedStatement.setString(1, tallyInputDTO.getCustomerName());
-			preparedStatement.setString(2, tallyInputDTO.getCompanyId());
+			preparedStatement.setString(1, tallyInputDTO.getCompanyId());
+			preparedStatement.setString(2, tallyInputDTO.getCustomerName());
 			
-			preparedStatement.executeQuery();
-			
+			resultSet = preparedStatement.executeQuery();
 			
 			if(null != resultSet && resultSet.next()) {
 				
-				gstNumber = resultSet.getString(1);
+				custID = resultSet.getString(1);
 			}
 
-			if(null == gstNumber) {
+			if(null == custID) {
 				preparedStatementAdd = connection.prepareStatement(Constants.DB_ADD_CUSTOMERS);
-				preparedStatementAdd.setString(1, Utility.getRandomNumber());
+				preparedStatementAdd.setString(1, tallyInputDTO.getCustID());
 				preparedStatementAdd.setString(2, tallyInputDTO.getGstNumber());
 				preparedStatementAdd.setString(3, tallyInputDTO.getCustomerName());
 				preparedStatementAdd.setString(4, tallyInputDTO.getCompanyId());
@@ -1058,6 +1075,8 @@ public class TallyDAO implements BaseDAO {
 				preparedStatementAdd.setDate(6, Utility.getCurrentdate());
 				
 				preparedStatementAdd.executeUpdate();
+			} else {
+				tallyInputDTO.setCustID(custID);
 			}
 			
 			
@@ -1069,15 +1088,86 @@ public class TallyDAO implements BaseDAO {
 			
 		} finally {
 			try {
+				if(null != resultSet) { resultSet.close();}
+				if(null != preparedStatement) { preparedStatement.close();}
 				if(null != preparedStatementAdd) { preparedStatementAdd.close();}
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
-			
-			closeResources();
 		}
 		
-		//return response;
+		return tallyInputDTO;
+	}
+	
+	public String getCustomer(TallyInputDTO tallyInputDTO, Connection connection) {
+		
+		String custID = null;
+		
+		try {
+			
+			preparedStatement = connection.prepareStatement(Constants.DB_GET_CUSTOMERS_FOR_RECEIPT);
+			preparedStatement.setString(1, tallyInputDTO.getCustomerName());
+			preparedStatement.setString(2, tallyInputDTO.getCompanyId());
+			
+			preparedStatement.executeQuery();
+			
+			if(null != resultSet && resultSet.next()) {
+				
+				custID = resultSet.getString(1);
+			}
+			
+		} catch (Exception e) {
+			
+			// TODO: handle exception
+			System.out.println("Error in adding customer in DB...");
+			e.printStackTrace();
+			
+		} finally {
+			try {
+				if(null != preparedStatement) { preparedStatement.close();}
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
+		
+		return custID;
+	}
+
+	public int addCustomers(TallyInputDTO tallyInputDTO, Connection connection) {
+		
+		PreparedStatement preparedStatementAdd = null;
+		int status = 0;
+ 		
+		try {
+			
+			preparedStatementAdd = connection.prepareStatement(Constants.DB_ADD_CUSTOMERS);
+			preparedStatementAdd.setString(1, Utility.getRandomNumber());
+			preparedStatementAdd.setString(2, tallyInputDTO.getGstNumber());
+			preparedStatementAdd.setString(3, tallyInputDTO.getCustomerName());
+			preparedStatementAdd.setString(4, tallyInputDTO.getCompanyId());
+			preparedStatementAdd.setDate(5, Utility.getCurrentdate());
+			preparedStatementAdd.setDate(6, Utility.getCurrentdate());
+			
+			status =  preparedStatementAdd.executeUpdate();
+			
+		} catch (Exception e) {
+			
+			if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+				System.out.println("Record is already available in Customer table for  " + tallyInputDTO.getGstNumber());
+			} else {
+				System.out.println("Error in adding customer in DB...");
+				e.printStackTrace();
+			}
+			
+		} finally {
+			try {
+				if(null != preparedStatementAdd) { preparedStatementAdd.close();}
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
+		
+		return status;
 	}
 
 	private void closeResources() {

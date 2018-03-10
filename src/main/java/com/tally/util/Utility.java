@@ -17,6 +17,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -177,6 +178,8 @@ public class Utility {
 		//int i = (int)Double.parseDouble("978000.00");
 		//System.out.println(i);
 	    //sendMail("SPAK", "testfile", "success", "ashok.arulsamy@gmail.com,selvaraj.arumuthu@gmail.com");
+		
+		System.out.println(getRandomNumberBasedOnTime());
 	}
 	
 	public static String getCurrentYear() {
@@ -393,5 +396,9 @@ public class Utility {
 		  e.printStackTrace();
 	  }
 
+	}
+	
+	public static String getRandomNumberBasedOnTime(){
+		return System.currentTimeMillis() + "-" + RandomUtils.nextInt(100000, 999999);
 	}
 }
