@@ -992,9 +992,11 @@ public class TallyDAO implements BaseDAO {
 			
 				//get the GST number from customers table
 				tallyInputDTO.setCustID(Utility.getRandomNumberBasedOnTime());
+				tallyInputDTO.setGstNumber(null);
 				tallyInputDTO.setCustomerName(receipt.getPartyLedgerName());
 				tallyInputDTO = updateCustomers(tallyInputDTO, connection);
-				System.out.println("TallyDAO : addReceipts : voucher key : " + receipt.getVoucherType() + " : Cust ID : " + tallyInputDTO.getCustID());
+				//System.out.println("TallyDAO : addReceipts : voucher key : " + receipt.getVoucherType() + " : GST No : " + tallyInputDTO.getGstNumber());
+				//System.out.println("TallyDAO : addReceipts : voucher key : " + receipt.getVoucherType() + " : Cust Name : " + receipt.getPartyLedgerName());
 				
 				preparedStatement = connection.prepareStatement(Constants.DB_ADD_RECEIPT);
 				

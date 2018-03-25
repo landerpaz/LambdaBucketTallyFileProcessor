@@ -260,7 +260,7 @@ public class TallyManualBC {
 			
 			/*Read File from local - START*/
 			builder = factory.newDocumentBuilder();
-            doc = builder.parse("/Users/ashokarulsamy/Downloads/DEMO_TALLY_DAY_BOOK_20180303.XML");
+            doc = builder.parse("/Users/ashokarulsamy/Downloads/SPAK_TALLY_DAY_BOOK__2018-03-09-11-48-30.xml");
             //doc = builder.parse("/Users/ashokarulsamy/Downloads/SPAK_TALLY_DAY_BOOK_AUTO.xml");
             XPathFactory xpathFactory = XPathFactory.newInstance();
             XPath xpath = xpathFactory.newXPath();
