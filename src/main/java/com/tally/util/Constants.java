@@ -39,6 +39,8 @@ public class Constants {
 	public static final String DB_GET_CUSTOMERS_FOR_RECEIPT = "SELECT CUSTOMER_ID FROM CUSTOMERS WHERE COMPANY_ID = ? AND NAME = ?"; 
 	
 	public static final String DB_ADD_CUSTOMERS = "INSERT INTO CUSTOMERS(CUSTOMER_ID, GST_NO, NAME, COMPANY_ID, CREATED_DATE, MODIFIED_DATE) VALUES (?, ?, ?, ?, ?, ?)"; 
+	public static final String DB_ADD_CUSTOMERS_BALANCE = "INSERT INTO CUSTOMERS_BALANCE(CUSTOMER_ID, CURRENT_BALANCE, CREATED_DATE, MODIFIED_DATE, COMPANY_ID) VALUES (?, ?, ?, ?, ?)"; 
+	
 	
 	public static final String RESPONSE_STATUS_SUCCESS = "Success";
 	public static final String RESPONSE_STATUS_FAILED = "Fauliure";
@@ -207,6 +209,7 @@ public class Constants {
 	public static final String PRODUCTION_SUMMARY = "PRODUCTION_SUMMARY";
 	public static final String SALES_SUMMARY = "SALES_SUMMARY";
 	public static final String SALES_ORDER = "SALES_ORDER";
+	public static final String CUSTOMER_DETAIL = "CUSTOMER_DETAIL";
 
 	//stock new approach
 	public static final String TALLYMESSAGE_COUNT_EXP1 = "count(//ENVELOPE/BODY/DATA/COLLECTION/VOUCHER)";
@@ -317,4 +320,11 @@ public class Constants {
 	public static final String DUPLICATE = "DUPLICATE";
 	public static final String SUCCESS = "SUCCESS";
 	public static final String DAYBOOK = "Daybook";
+	
+	//cutomer current balance
+	public static final String CUSTOMER_CURRENT_BALANCE_COUNT_EXP = "count(//ENVELOPE/BODY/DATA/COLLECTION/LEDGER)";
+	public static final String CUSTOMER_CURRENT_BALANCE_CUSTOMER_NAME = "//ENVELOPE/BODY/DATA/COLLECTION/LEDGER[{0}]//@NAME";
+	public static final String CUSTOMER_CURRENT_BALANCE_CLOSING_BALANCE = "//ENVELOPE/BODY/DATA/COLLECTION/LEDGER[{0}]//CLOSINGBALANCE";
+	public static final String CUSTOMER_CURRENT_BALANCE_PARENT = "//ENVELOPE/BODY/DATA/COLLECTION/LEDGER[{0}]//PARENT";
+	
 }

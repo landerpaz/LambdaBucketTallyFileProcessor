@@ -2,6 +2,7 @@ package com.tally.dto;
 
 import java.util.List;
 
+import com.tally.vo.Customer;
 import com.tally.vo.DayBookMasterVO;
 import com.tally.vo.ProductionSummaryVO;
 import com.tally.vo.Receipt;
@@ -34,7 +35,14 @@ public class TallyInputDTO {
 	private String customerName;
 	private String gstNumber;
 	private String custID;
+	private List<Customer> customers;
 	
+	public List<Customer> getCustomers() {
+		return customers;
+	}
+	public void setCustomers(List<Customer> customers) {
+		this.customers = customers;
+	}
 	public String getCustID() {
 		return custID;
 	}

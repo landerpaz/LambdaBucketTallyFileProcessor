@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.tally.bc.CustomerBC;
 import com.tally.bc.SalesOrderBC;
 import com.tally.bc.TallyBC;
 import com.tally.bc.TallyDayBookBC;
@@ -22,6 +23,7 @@ import com.tally.dto.Result;
 import com.tally.dto.TallyInputDTO;
 import com.tally.util.Constants;
 import com.tally.util.Utility;
+import com.tally.vo.Customer;
 
 public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
 
@@ -56,6 +58,7 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
         TallyInputDTO tallyInputDTO = new TallyInputDTO();
         List<Result> results = new ArrayList<>();
         tallyInputDTO.setResults(results); //added here to send non blank mail body, even if no data is available when processing the data, to avoid error in mail service
+        boolean daybook = false;
         
         try {
             
@@ -66,6 +69,8 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             System.out.println("Processing file from S3 bucket..........");
             
             if(null != sourceKey && sourceKey.contains(Constants.TALLY_DAY_BOOK)) {
+            	
+            	daybook = true;
             	
             	System.out.println("Processing TALLY_DAY_BOOK file.");
             	
@@ -81,6 +86,15 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
 	            //process daybook, stock and sales
 	            TallyBC tallyBC = new TallyBC();
 	            tallyInputDTO = tallyBC.processDataFromXML(tallyInputDTO, response, sourceKey, sourceBucket);
+	            
+            } if(null != sourceKey && sourceKey.contains(Constants.CUSTOMER_DETAIL)) {
+            	
+            	System.out.println("Processing CUSTOMER_DETAIL file.");
+            	
+	            tallyInputDTO.setCompanyId(Utility.getCompanyFromFileName(sourceKey, 0));
+	            
+	            CustomerBC customerBC = new CustomerBC();
+	            tallyInputDTO = customerBC.processDataFromXML(tallyInputDTO, response, sourceKey, sourceBucket);
 	            
             } else if(null != sourceKey && sourceKey.contains(Constants.TALLY_STOCK)) {
             	
@@ -164,14 +178,16 @@ public class LambdaFunctionHandler implements RequestHandler<S3Event, String> {
             throw e;
         } finally {
         	
-        	System.out.println("Sending mail..........");
-            
-        	if(null != tallyInputDTO && !tallyInputDTO.isHasError()) {
-        		Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 0), sourceKey, "Success", Constants.mailTo, tallyInputDTO.getResults());
-        	} else {
-        		Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 0), sourceKey, "Failed", Constants.mailTo, tallyInputDTO.getResults());
+        	if(daybook) {
+	        	System.out.println("Sending mail..........");
+	            
+	        	if(null != tallyInputDTO && !tallyInputDTO.isHasError()) {
+	        		Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 0), sourceKey, "Success", Constants.mailTo, tallyInputDTO.getResults());
+	        	} else {
+	        		Utility.sendMail(Utility.getCompanyFromFileName(sourceKey, 0), sourceKey, "Failed", Constants.mailTo, tallyInputDTO.getResults());
+	        	}
         	}
-            
+        	
             System.out.println("End..........");
         }
         

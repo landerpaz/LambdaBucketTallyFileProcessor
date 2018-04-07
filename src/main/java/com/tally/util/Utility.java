@@ -117,15 +117,19 @@ public class Utility {
         return null != result ? result.trim() : result;
     }
 	
-	public static String getData(Document doc, XPath xpath, String input, Object...objects) {
+	public static String getData(Document doc, XPath xpath, String input, Object...objects)  {
 		
 		String result = null;
 		
 		try {
+			//System.out.println(input);
+			//System.out.println(MessageFormat.format(input, objects));
 			XPathExpression expr = xpath.compile(MessageFormat.format(input, objects));
 			result = (String) expr.evaluate(doc, XPathConstants.STRING);
 		} catch (XPathExpressionException e) {
+			System.out.println(e.getMessage());
             e.printStackTrace();
+            //throw new Exception();
         }
 		
         return null != result ? result.trim() : result;
@@ -138,7 +142,8 @@ public class Utility {
         	XPathExpression expr = xpath.compile(MessageFormat.format(input, objects));
             count = (String) expr.evaluate(doc, XPathConstants.STRING);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+        	e.printStackTrace();
+            
         }
 
         return null != count ? Integer.parseInt(count) : 0;
@@ -339,6 +344,26 @@ public class Utility {
 		
 	}
 	
+
+
+	public static String getDataForOneParamter(Document doc, XPath xpath, String expression, int index) {
+	    String result = null;
+	    try {
+	    	//System.out.println(expression);
+	    	//System.out.println(expression);
+			//System.out.println(MessageFormat.format(expression, new Integer(index)));
+			
+	        XPathExpression expr = xpath.compile(MessageFormat.format(expression, new Integer(index)).replace(",", ""));
+	        result = (String) expr.evaluate(doc, XPathConstants.STRING);
+	    } catch (XPathExpressionException e) {
+	        e.printStackTrace();
+	        System.out.println(e.getMessage());
+	        //throw new Exception();
+	    }
+	    return result;
+	}
+  
+    
 	public static String getData(Document doc, XPath xpath, String expression) {
         String companyName = null;
         try {

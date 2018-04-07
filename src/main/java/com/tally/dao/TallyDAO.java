@@ -15,6 +15,7 @@ import com.tally.dto.Result;
 import org.slf4j.LoggerFactory;*/
 
 import com.tally.dto.TallyInputDTO;
+import com.tally.vo.Customer;
 import com.tally.vo.DayBookMasterVO;
 import com.tally.vo.InventoryEntryVO;
 import com.tally.vo.LedgerEntryVO;
@@ -1022,6 +1023,78 @@ public class TallyDAO implements BaseDAO {
 				} catch (Exception e) {
 					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
 						System.out.println("Record is already available in Receipt_details table for " + voucherKey);
+						result.setStatus(DUPLICATE);
+						results.add(result);
+					} else {
+						e.printStackTrace();
+						result.setStatus(e.getMessage());
+						results.add(result);
+						//throw new RuntimeException(e);
+					}
+					
+					continue;
+				}
+				
+				result.setStatus(SUCCESS);
+				results.add(result);
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			tallyInputDTO.setHasError(true);
+		} finally {
+			closeResources();
+		}
+		
+		tallyInputDTO.setResults(results);
+		return tallyInputDTO;
+	}
+
+	public TallyInputDTO addConsumerDetail(TallyInputDTO tallyInputDTO) {
+		
+		PreparedStatement preparedStatement = null;
+		List<Result> results = new ArrayList<>();
+		Result result = null;
+		
+		try {
+			
+			connection = DatabaseManager.getInstance().getConnection();
+			
+			double amount = 0.0;
+			for(Customer customer : tallyInputDTO.getCustomers()) {
+			
+				//to send the detail in mail
+				result = new Result();
+				result.setCustomerName(customer.getCustomerName());
+				
+				//get the GST number from customers table
+				tallyInputDTO.setCustID(Utility.getRandomNumberBasedOnTime());
+				tallyInputDTO.setGstNumber(null);
+				tallyInputDTO.setCustomerName(customer.getCustomerName());
+				tallyInputDTO = updateCustomers(tallyInputDTO, connection);
+				//System.out.println("TallyDAO : addReceipts : voucher key : " + receipt.getVoucherType() + " : GST No : " + tallyInputDTO.getGstNumber());
+				//System.out.println("TallyDAO : addReceipts : voucher key : " + receipt.getVoucherType() + " : Cust Name : " + receipt.getPartyLedgerName());
+				
+				preparedStatement = connection.prepareStatement(Constants.DB_ADD_CUSTOMERS_BALANCE);
+				
+				int parameterIndex = 1;
+			
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCustID());
+				if(null != customer.getCurrentBalance() && customer.getCurrentBalance().trim().length() > 0) {
+					amount = Math.abs(Double.parseDouble(customer.getCurrentBalance()));
+				} 
+				preparedStatement.setDouble(parameterIndex++, amount);
+				amount = 0.0;
+				preparedStatement.setDate(parameterIndex++, Utility.getCurrentdate());
+				preparedStatement.setDate(parameterIndex++, Utility.getCurrentdate());
+				preparedStatement.setString(parameterIndex++, tallyInputDTO.getCompanyId());
+				
+				
+				try {
+					preparedStatement.executeUpdate();
+				} catch (Exception e) {
+					if(null != e && null != e.getMessage() && e.getMessage().contains("Duplicate")) {
+						System.out.println("Record is already available in customers_balance table for " + customer.getCustomerName());
 						result.setStatus(DUPLICATE);
 						results.add(result);
 					} else {
